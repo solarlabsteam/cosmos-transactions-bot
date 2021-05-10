@@ -101,7 +101,7 @@ func Execute(cmd *cobra.Command, args []string) {
 		log.Error().Err(err).Msg("Failed to start a client")
 		os.Exit(1)
 	}
-	defer client.Stop()
+	defer client.Stop() // nolint
 
 	err = client.Subscribe(context.Background(), Query)
 	if err != nil {
@@ -184,7 +184,9 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 		txSerialized := serializeTxResult(txResult) + msgsSerialized
 
 		log.Debug().Str("msg", txSerialized).Msg("Tx serialization")
-		bot.Send(&telegramBot.User{ID: 7653361}, txSerialized, telegramBot.ModeHTML)
+		if _, err := bot.Send(&telegramBot.User{ID: 7653361}, txSerialized, telegramBot.ModeHTML); err != nil {
+			log.Error().Err(err).Msg("Could not send Telegram message")
+		}
 	}
 }
 
@@ -192,7 +194,9 @@ func serializeTxResult(txResult abciTypes.TxResult) string {
 	txHash := fmt.Sprintf("%X", tmhash.Sum(txResult.Tx))
 	var tx tx.Tx
 
-	proto.Unmarshal(txResult.Tx, &tx)
+	if err := proto.Unmarshal(txResult.Tx, &tx); err != nil {
+		log.Error().Err(err).Msg("Could not parse tx")
+	}
 
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf(
