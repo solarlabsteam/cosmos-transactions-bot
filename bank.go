@@ -27,8 +27,8 @@ func processMsgSend(message *cosmosTypes.Any) string {
 			Msg("MsgSend")
 		sb.WriteString(fmt.Sprintf(`<strong>Transfer</strong>
 <code>%d %s</code>
-<strong>From: </strong><a href=\"%s\">%s</a>
-<strong>To: </strong><a href=\"%s\">%s</a>`,
+<strong>From: </strong><a href="%s">%s</a>
+<strong>To: </strong><a href="%s">%s</a>`,
 			coin.Amount.Int64(),
 			coin.Denom,
 			makeMintscanAccountLink(parsedMessage.FromAddress),
