@@ -171,6 +171,8 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 			serializedMessage = processMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
 			serializedMessage = processMsgWithdrawDelegatorReward(message)
+		case "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission":
+			serializedMessage = processMsgWithdrawValidatorCommission(message)
 		default:
 			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
