@@ -165,6 +165,10 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 			serializedMessage = processMsgDelegate(message)
 		case "/cosmos.staking.v1beta1.MsgUndelegate":
 			serializedMessage = processMsgUndelegate(message)
+		case "/cosmos.staking.v1beta1.MsgBeginRedelegate":
+			serializedMessage = processMsgBeginRedelegate(message)
+		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
+			serializedMessage = processMsgWithdrawDelegatorReward(message)
 		default:
 			log.Debug().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
