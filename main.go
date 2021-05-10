@@ -167,6 +167,8 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 			serializedMessage = processMsgUndelegate(message)
 		case "/cosmos.staking.v1beta1.MsgBeginRedelegate":
 			serializedMessage = processMsgBeginRedelegate(message)
+		case "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress":
+			serializedMessage = processMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
 			serializedMessage = processMsgWithdrawDelegatorReward(message)
 		default:

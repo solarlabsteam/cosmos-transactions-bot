@@ -27,3 +27,23 @@ func processMsgWithdrawDelegatorReward(message *cosmosTypes.Any) string {
 		parsedMessage.DelegatorAddress,
 	)
 }
+
+func processMsgSetWithdrawAddress(message *cosmosTypes.Any) string {
+	var parsedMessage cosmosDistributionTypes.MsgSetWithdrawAddress
+	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
+		log.Error().Err(err).Msg("Could not parse MsgSetWithdrawAddress")
+	}
+
+	log.Info().
+		Str("by", parsedMessage.DelegatorAddress).
+		Str("withdraw_address", parsedMessage.WithdrawAddress).
+		Msg("MsgSetWithdrawAddress")
+	return fmt.Sprintf(`<strong>Withdraw rewards</strong>
+<strong>By: </strong><a href="%s">%s</a>
+<strong>New withdraw address: </strong><a href="%s">%s</a>`,
+		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
+		parsedMessage.DelegatorAddress,
+		makeMintscanAccountLink(parsedMessage.WithdrawAddress),
+		parsedMessage.WithdrawAddress,
+	)
+}
