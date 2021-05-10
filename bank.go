@@ -25,15 +25,15 @@ func processMsgSend(message *cosmosTypes.Any) string {
 			Str("denom", coin.Denom).
 			Int64("amount", coin.Amount.Int64()).
 			Msg("MsgSend")
-		sb.WriteString(fmt.Sprintf(
-			"<strong>Transfer</strong>\n<code>%d %s</code>\n</strong>From: </strong><a href=\"https://mintscan.io/%s/account/%s\">%s</a>\n</strong>To: </strong><a href=\"https://mintscan.io/%s/account/%s\">%s</a>",
+		sb.WriteString(fmt.Sprintf(`<strong>Transfer</strong>
+<code>%d %s</code>
+<strong>From: </strong><a href=\"%s\">%s</a>
+<strong>To: </strong><a href=\"%s\">%s</a>`,
 			coin.Amount.Int64(),
 			coin.Denom,
-			MintscanProject,
+			makeMintscanAccountLink(parsedMessage.FromAddress),
 			parsedMessage.FromAddress,
-			parsedMessage.FromAddress,
-			MintscanProject,
-			parsedMessage.ToAddress,
+			makeMintscanAccountLink(parsedMessage.ToAddress),
 			parsedMessage.ToAddress,
 		))
 	}
