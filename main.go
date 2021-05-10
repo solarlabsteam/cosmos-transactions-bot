@@ -172,7 +172,7 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
 			serializedMessage = processMsgWithdrawDelegatorReward(message)
 		default:
-			log.Debug().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
+			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
 
 		if serializedMessage != "" {
