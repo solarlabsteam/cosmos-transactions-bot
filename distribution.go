@@ -47,23 +47,42 @@ func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any) MsgWithdrawDelega
 	}
 }
 
-func processMsgSetWithdrawAddress(message *cosmosTypes.Any) string {
+type MsgSetWithdrawAddress struct {
+	WithdrawAddress  string
+	DelegatorAddress string
+}
+
+func (msg MsgSetWithdrawAddress) Empty() bool {
+	return msg.DelegatorAddress == ""
+}
+
+func ParseMsgSetWithdrawAddress(message *cosmosTypes.Any) MsgSetWithdrawAddress {
 	var parsedMessage cosmosDistributionTypes.MsgSetWithdrawAddress
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgSetWithdrawAddress")
+		return MsgSetWithdrawAddress{}
 	}
 
 	log.Info().
 		Str("by", parsedMessage.DelegatorAddress).
 		Str("withdraw_address", parsedMessage.WithdrawAddress).
 		Msg("MsgSetWithdrawAddress")
-	return fmt.Sprintf(`<strong>Set withdraw address</strong>
-<strong>By: </strong><a href="%s">%s</a>
-<strong>New withdraw address: </strong><a href="%s">%s</a>`,
-		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
-		parsedMessage.DelegatorAddress,
-		makeMintscanAccountLink(parsedMessage.WithdrawAddress),
-		parsedMessage.WithdrawAddress,
+
+	return MsgSetWithdrawAddress{
+		DelegatorAddress: parsedMessage.DelegatorAddress,
+		WithdrawAddress:  parsedMessage.WithdrawAddress,
+	}
+}
+
+func (msg MsgSetWithdrawAddress) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s %s
+%s %s`,
+		serializer.StrongSerializer("Set withdraw address"),
+		serializer.StrongSerializer("By: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.StrongSerializer("New withdraw address: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.WithdrawAddress), msg.WithdrawAddress),
 	)
 }
 
