@@ -208,7 +208,7 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 			sb.WriteString(serializedMessage + "\n\n")
 		}
 
-		if !msg.Empty() {
+		if msg != nil && !msg.Empty() {
 			report.Msgs = append(report.Msgs, msg)
 		}
 	}
