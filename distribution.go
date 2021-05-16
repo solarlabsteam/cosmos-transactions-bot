@@ -23,7 +23,7 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 %s %s`,
 		serializer.StrongSerializer("Withdraw rewards"),
 		serializer.StrongSerializer("From: "),
-		serializer.LinksSerializer((msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 		serializer.StrongSerializer("To: "),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 	)

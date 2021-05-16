@@ -22,14 +22,14 @@ func (tx Tx) Serialize(serializer Serializer) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf(
-		"Tx %s at block %s\n",
+		"Tx %s at block %s",
 		serializer.LinksSerializer(makeMintscanTxLink(tx.Hash), tx.Hash[0:8]),
 		serializer.LinksSerializer(makeMintscanBlockLink(tx.Height), strconv.FormatInt(tx.Height, 10)),
 	))
 
 	if tx.Memo != "" {
 		sb.WriteString(fmt.Sprintf(
-			"%s %s",
+			"\n%s %s",
 			serializer.StrongSerializer("Memo:"),
 			serializer.CodeSerializer(tx.Memo),
 		))
