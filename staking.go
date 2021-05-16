@@ -45,12 +45,12 @@ func (msg MsgDelegate) Serialize(serializer Serializer) string {
 	return fmt.Sprintf(`%s
 %s
 %s %s
-<strong>To: </strong><a href="%s">%s</a>`,
+%s %s`,
 		serializer.StrongSerializer("Delegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
-		serializer.StrongSerializer("From: "),
+		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
-		serializer.StrongSerializer("To: "),
+		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 	)
 }
@@ -98,12 +98,12 @@ func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Redelegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
-		serializer.StrongSerializer("By: "),
+		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
-		serializer.StrongSerializer("From: "),
+		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorSrcAddress), msg.ValidatorSrcAddress),
-		serializer.StrongSerializer("To: "),
+		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorDstAddress), msg.ValidatorDstAddress),
 	)
 }
@@ -147,10 +147,10 @@ func (msg MsgUndelegate) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Undelegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
-		serializer.StrongSerializer("From: "),
+		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
-		serializer.StrongSerializer("By: "),
+		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 	)
 }

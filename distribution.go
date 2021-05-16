@@ -22,9 +22,9 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Withdraw rewards"),
-		serializer.StrongSerializer("From: "),
+		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
-		serializer.StrongSerializer("To: "),
+		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 	)
 }
@@ -79,7 +79,7 @@ func (msg MsgSetWithdrawAddress) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Set withdraw address"),
-		serializer.StrongSerializer("By: "),
+		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 		serializer.StrongSerializer("New withdraw address: "),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.WithdrawAddress), msg.WithdrawAddress),
@@ -114,7 +114,7 @@ func (msg MsgWithdrawValidatorCommission) Serialize(serializer Serializer) strin
 	return fmt.Sprintf(`%s
 %s %s`,
 		serializer.StrongSerializer("Withdraw validator commission"),
-		serializer.StrongSerializer("Wallet: "),
+		serializer.StrongSerializer("Wallet:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 	)
 }
