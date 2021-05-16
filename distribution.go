@@ -86,18 +86,35 @@ func (msg MsgSetWithdrawAddress) Serialize(serializer Serializer) string {
 	)
 }
 
-func processMsgWithdrawValidatorCommission(message *cosmosTypes.Any) string {
+type MsgWithdrawValidatorCommission struct {
+	ValidatorAddress string
+}
+
+func (msg MsgWithdrawValidatorCommission) Empty() bool {
+	return msg.ValidatorAddress == ""
+}
+
+func ParseMsgWithdrawValidatorCommission(message *cosmosTypes.Any) MsgWithdrawValidatorCommission {
 	var parsedMessage cosmosDistributionTypes.MsgWithdrawValidatorCommission
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgWithdrawValidatorCommission")
+		return MsgWithdrawValidatorCommission{}
 	}
 
 	log.Info().
 		Str("address", parsedMessage.ValidatorAddress).
 		Msg("MsgWithdrawValidatorCommission")
-	return fmt.Sprintf(`<strong>Withdraw validator commission</strong>
-<strong>Wallet: </strong><a href="%s">%s</a>`,
-		makeMintscanValidatorLink(parsedMessage.ValidatorAddress),
-		parsedMessage.ValidatorAddress,
+
+	return MsgWithdrawValidatorCommission{
+		ValidatorAddress: parsedMessage.ValidatorAddress,
+	}
+}
+
+func (msg MsgWithdrawValidatorCommission) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s %s`,
+		serializer.StrongSerializer("Withdraw validator commission"),
+		serializer.StrongSerializer("Wallet: "),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 	)
 }
