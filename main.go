@@ -197,7 +197,7 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		case "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress":
 			serializedMessage = processMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
-			serializedMessage = processMsgWithdrawDelegatorReward(message)
+			msg = ParseMsgWithdrawDelegatorReward(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission":
 			serializedMessage = processMsgWithdrawValidatorCommission(message)
 		default:
