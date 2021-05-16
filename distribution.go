@@ -8,24 +8,43 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-func processMsgWithdrawDelegatorReward(message *cosmosTypes.Any) string {
+type MsgWithdrawDelegatorReward struct {
+	ValidatorAddress string
+	DelegatorAddress string
+}
+
+func (msg MsgWithdrawDelegatorReward) Empty() bool {
+	return msg.ValidatorAddress == ""
+}
+
+func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s %s
+%s %s`,
+		serializer.StrongSerializer("Withdraw rewards"),
+		serializer.StrongSerializer("From: "),
+		serializer.LinksSerializer((msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.StrongSerializer("To: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+	)
+}
+
+func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any) MsgWithdrawDelegatorReward {
 	var parsedMessage cosmosDistributionTypes.MsgWithdrawDelegatorReward
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgWithdrawDelegatorReward")
+		return MsgWithdrawDelegatorReward{}
 	}
 
 	log.Info().
 		Str("from", parsedMessage.ValidatorAddress).
 		Str("to", parsedMessage.DelegatorAddress).
 		Msg("MsgWithdrawDelegatorReward")
-	return fmt.Sprintf(`<strong>Withdraw rewards</strong>
-<strong>From: </strong><a href="%s">%s</a>
-<strong>To: </strong><a href="%s">%s</a>`,
-		makeMintscanValidatorLink(parsedMessage.ValidatorAddress),
-		parsedMessage.ValidatorAddress,
-		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
-		parsedMessage.DelegatorAddress,
-	)
+
+	return MsgWithdrawDelegatorReward{
+		ValidatorAddress: parsedMessage.ValidatorAddress,
+		DelegatorAddress: parsedMessage.DelegatorAddress,
+	}
 }
 
 func processMsgSetWithdrawAddress(message *cosmosTypes.Any) string {
