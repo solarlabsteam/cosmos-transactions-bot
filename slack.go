@@ -40,7 +40,7 @@ func (r *SlackReporter) Init() {
 			return fmt.Sprintf(`<%s|%s>",`, address, text)
 		},
 		StrongSerializer: func(text string) string {
-			return fmt.Sprintf(`*%s%`, text)
+			return fmt.Sprintf(`*%s*`, text)
 		},
 		CodeSerializer: func(text string) string {
 			return fmt.Sprintf("`%s`", text)
