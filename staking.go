@@ -55,10 +55,23 @@ func (msg MsgDelegate) Serialize(serializer Serializer) string {
 	)
 }
 
-func processMsgBeginRedelegate(message *cosmosTypes.Any) string {
+type MsgBeginRedelegate struct {
+	DelegatorAddress    string
+	ValidatorSrcAddress string
+	ValidatorDstAddress string
+	Denom               string
+	Amount              int64
+}
+
+func (msg MsgBeginRedelegate) Empty() bool {
+	return msg.DelegatorAddress == ""
+}
+
+func ParseMsgBeginRedelegate(message *cosmosTypes.Any) MsgBeginRedelegate {
 	var parsedMessage cosmosStakingTypes.MsgBeginRedelegate
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgBeginRedelegate")
+		return MsgBeginRedelegate{}
 	}
 
 	log.Info().
@@ -68,26 +81,49 @@ func processMsgBeginRedelegate(message *cosmosTypes.Any) string {
 		Str("denom", parsedMessage.Amount.Denom).
 		Int64("amount", parsedMessage.Amount.Amount.Int64()).
 		Msg("MsgBeginRedelegate")
-	return fmt.Sprintf(`<strong>Redelegate</strong>
-<code>%d%s</code>
-<strong>By: </strong><a href="%s">%s</a>
-<strong>From: </strong><a href="%s">%s</a>
-<strong>To: </strong><a href="%s">%s</a>`,
-		parsedMessage.Amount.Amount.Int64(),
-		parsedMessage.Amount.Denom,
-		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
-		parsedMessage.DelegatorAddress,
-		makeMintscanValidatorLink(parsedMessage.ValidatorSrcAddress),
-		parsedMessage.ValidatorSrcAddress,
-		makeMintscanValidatorLink(parsedMessage.ValidatorDstAddress),
-		parsedMessage.ValidatorDstAddress,
+
+	return MsgBeginRedelegate{
+		DelegatorAddress:    parsedMessage.DelegatorAddress,
+		ValidatorSrcAddress: parsedMessage.ValidatorSrcAddress,
+		ValidatorDstAddress: parsedMessage.ValidatorDstAddress,
+		Denom:               parsedMessage.Amount.Denom,
+		Amount:              parsedMessage.Amount.Amount.Int64(),
+	}
+}
+
+func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s
+%s %s
+%s %s
+%s %s`,
+		serializer.StrongSerializer("Redelegate"),
+		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("By: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.StrongSerializer("From: "),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorSrcAddress), msg.ValidatorSrcAddress),
+		serializer.StrongSerializer("To: "),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorDstAddress), msg.ValidatorDstAddress),
 	)
 }
 
-func processMsgUndelegate(message *cosmosTypes.Any) string {
+type MsgUndelegate struct {
+	DelegatorAddress string
+	ValidatorAddress string
+	Denom            string
+	Amount           int64
+}
+
+func (msg MsgUndelegate) Empty() bool {
+	return msg.DelegatorAddress == ""
+}
+
+func ParseMsgUndelegate(message *cosmosTypes.Any) MsgUndelegate {
 	var parsedMessage cosmosStakingTypes.MsgUndelegate
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgUndelegate")
+		return MsgUndelegate{}
 	}
 
 	log.Info().
@@ -96,15 +132,25 @@ func processMsgUndelegate(message *cosmosTypes.Any) string {
 		Str("denom", parsedMessage.Amount.Denom).
 		Int64("amount", parsedMessage.Amount.Amount.Int64()).
 		Msg("MsgUndelegate")
-	return fmt.Sprintf(`<strong>Undelegate</strong>
-<code>%d%s</code>
-<strong>From: </strong><a href="%s">%s</a>
-<strong>By: </strong><a href="%s">%s</a>`,
-		parsedMessage.Amount.Amount.Int64(),
-		parsedMessage.Amount.Denom,
-		makeMintscanValidatorLink(parsedMessage.ValidatorAddress),
-		parsedMessage.ValidatorAddress,
-		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
-		parsedMessage.DelegatorAddress,
+
+	return MsgUndelegate{
+		DelegatorAddress: parsedMessage.DelegatorAddress,
+		ValidatorAddress: parsedMessage.ValidatorAddress,
+		Denom:            parsedMessage.Amount.Denom,
+		Amount:           parsedMessage.Amount.Amount.Int64(),
+	}
+}
+
+func (msg MsgUndelegate) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s
+%s %s
+%s %s`,
+		serializer.StrongSerializer("Undelegate"),
+		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("From: "),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.StrongSerializer("By: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 	)
 }

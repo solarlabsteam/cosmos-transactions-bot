@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/cosmos/cosmos-sdk/types/tx"
@@ -176,11 +175,7 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		Int("len", len(txMessages)).
 		Msg("Got transaction")
 
-	var sb strings.Builder
-
 	for _, message := range txMessages {
-		serializedMessage := ""
-
 		var msg Msg
 
 		switch message.TypeUrl {
@@ -191,9 +186,9 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		case "/cosmos.staking.v1beta1.MsgDelegate":
 			msg = ParseMsgDelegate(message)
 		case "/cosmos.staking.v1beta1.MsgUndelegate":
-			serializedMessage = processMsgUndelegate(message)
+			msg = ParseMsgUndelegate(message)
 		case "/cosmos.staking.v1beta1.MsgBeginRedelegate":
-			serializedMessage = processMsgBeginRedelegate(message)
+			msg = ParseMsgBeginRedelegate(message)
 		case "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress":
 			msg = ParseMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
@@ -202,10 +197,6 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 			msg = ParseMsgWithdrawValidatorCommission(message)
 		default:
 			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
-		}
-
-		if serializedMessage != "" {
-			sb.WriteString(serializedMessage + "\n\n")
 		}
 
 		if msg != nil && !msg.Empty() {
