@@ -37,7 +37,7 @@ func (r *SlackReporter) Init() {
 	r.SlackClient = *client
 	r.MarkdownSerializer = Serializer{
 		LinksSerializer: func(address string, text string) string {
-			return fmt.Sprintf(`<%s|%s>",`, address, text)
+			return fmt.Sprintf(`<%s|%s>`, address, text)
 		},
 		StrongSerializer: func(text string) string {
 			return fmt.Sprintf(`*%s*`, text)
