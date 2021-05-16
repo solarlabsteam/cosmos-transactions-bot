@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/gogo/protobuf/proto"
@@ -17,14 +15,11 @@ import (
 	"github.com/spf13/viper"
 	json "github.com/tendermint/tendermint/libs/json"
 
-	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmclient "github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonRpcTypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	events "github.com/tendermint/tendermint/types"
-
-	telegramBot "gopkg.in/tucnak/telebot.v2"
 )
 
 var (
@@ -39,7 +34,7 @@ var (
 
 var log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
-var bot *telegramBot.Bot
+var reporters []Reporter
 
 var rootCmd = &cobra.Command{
 	Use:  "cosmos-transactions-bot",
@@ -80,14 +75,16 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	zerolog.SetGlobalLevel(logLevel)
 
-	bot, err = telegramBot.NewBot(telegramBot.Settings{
-		Token:  TelegramToken,
-		Poller: &telegramBot.LongPoller{Timeout: 10 * time.Second},
-	})
+	reporters = []Reporter{
+		&TelegramReporter{
+			TelegramToken: TelegramToken,
+			TelegramChat:  TelegramChat,
+		},
+	}
 
-	if err != nil {
-		log.Fatal().Err(err).Msg("Could not create Telegram bot")
-		return
+	for _, reporter := range reporters {
+		log.Info().Str("name", reporter.Name()).Msg("Init reporter")
+		reporter.Init()
 	}
 
 	client, err := tmclient.NewWS("tcp://localhost:26657", "/websocket")
@@ -125,6 +122,31 @@ func Execute(cmd *cobra.Command, args []string) {
 }
 
 func processResponse(result jsonRpcTypes.RPCResponse) {
+	report := generateReport(result)
+
+	if report.Empty() {
+		log.Info().Msg("Report is empty, not sending.")
+		return
+	}
+
+	for _, reporter := range reporters {
+		if !reporter.Enabled() {
+			log.Debug().Str("name", reporter.Name()).Msg("Reporter is disabled.")
+			continue
+		}
+
+		log.Info().Str("name", reporter.Name()).Msg("Sending a report to reporter...")
+		if err := reporter.SendReport(report); err != nil {
+			log.Error().Err(err).Str("name", reporter.Name()).Msg("Could not send message")
+		}
+	}
+}
+
+func generateReport(result jsonRpcTypes.RPCResponse) Report {
+	report := Report{
+		Msgs: []Msg{},
+	}
+
 	var resultEvent ctypes.ResultEvent
 	if err := json.Unmarshal(result.Result, &resultEvent); err != nil {
 		log.Error().Err(err).Msg("Failed to parse event")
@@ -132,7 +154,7 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 
 	if resultEvent.Data == nil {
 		log.Debug().Msg("Event does not have data, skipping.")
-		return
+		return Report{}
 	}
 
 	txResult := resultEvent.Data.(events.EventDataTx).TxResult
@@ -144,6 +166,7 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 	}
 
 	txMessages := tx.GetBody().GetMessages()
+	report.Tx = parseTx(txResult)
 
 	log.Info().
 		Int64("height", txResult.Height).
@@ -152,72 +175,36 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 		Int("len", len(txMessages)).
 		Msg("Got transaction")
 
-	var sb strings.Builder
-
 	for _, message := range txMessages {
-		serializedMessage := ""
+		var msg Msg
+
 		switch message.TypeUrl {
 		case "/cosmos.bank.v1beta1.MsgSend":
-			serializedMessage = processMsgSend(message)
+			msg = ParseMsgSend(message)
 		case "/cosmos.gov.v1beta1.MsgVote":
-			serializedMessage = processMsgVote(message)
+			msg = ParseMsgVote(message)
 		case "/cosmos.staking.v1beta1.MsgDelegate":
-			serializedMessage = processMsgDelegate(message)
+			msg = ParseMsgDelegate(message)
 		case "/cosmos.staking.v1beta1.MsgUndelegate":
-			serializedMessage = processMsgUndelegate(message)
+			msg = ParseMsgUndelegate(message)
 		case "/cosmos.staking.v1beta1.MsgBeginRedelegate":
-			serializedMessage = processMsgBeginRedelegate(message)
+			msg = ParseMsgBeginRedelegate(message)
 		case "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress":
-			serializedMessage = processMsgSetWithdrawAddress(message)
+			msg = ParseMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
-			serializedMessage = processMsgWithdrawDelegatorReward(message)
+			msg = ParseMsgWithdrawDelegatorReward(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission":
-			serializedMessage = processMsgWithdrawValidatorCommission(message)
+			msg = ParseMsgWithdrawValidatorCommission(message)
 		default:
 			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
 
-		if serializedMessage != "" {
-			sb.WriteString(serializedMessage + "\n\n")
+		if msg != nil && !msg.Empty() {
+			report.Msgs = append(report.Msgs, msg)
 		}
 	}
 
-	msgsSerialized := sb.String()
-
-	if msgsSerialized != "" {
-		txSerialized := serializeTxResult(txResult) + msgsSerialized
-
-		log.Debug().Str("msg", txSerialized).Msg("Tx serialization")
-		if _, err := bot.Send(&telegramBot.User{ID: 7653361}, txSerialized, telegramBot.ModeHTML); err != nil {
-			log.Error().Err(err).Msg("Could not send Telegram message")
-		}
-	}
-}
-
-func serializeTxResult(txResult abciTypes.TxResult) string {
-	txHash := fmt.Sprintf("%X", tmhash.Sum(txResult.Tx))
-	var tx tx.Tx
-
-	if err := proto.Unmarshal(txResult.Tx, &tx); err != nil {
-		log.Error().Err(err).Msg("Could not parse tx")
-	}
-
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf(
-		"Tx <a href=\"%s\">%s</a> at block <a href=\"%s\">%d</a>\n",
-		makeMintscanTxLink(txHash),
-		txHash[0:8],
-		makeMintscanBlockLink(txResult.Height),
-		txResult.Height,
-	))
-
-	if memo := tx.GetBody().GetMemo(); memo != "" {
-		sb.WriteString(fmt.Sprintf("Memo: %s\n", memo))
-	}
-
-	sb.WriteString("\n")
-
-	return sb.String()
+	return report
 }
 
 func main() {
