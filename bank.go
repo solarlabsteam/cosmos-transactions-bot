@@ -65,8 +65,7 @@ func (msg MsgSend) Serialize(serializer Serializer) string {
 		sb.WriteString(serializer.CodeSerializer(fmt.Sprintf("%d %s", coin.Amount, coin.Denom)) + "\n")
 	}
 
-	sb.WriteString(fmt.Sprintf(`
-%s %s
+	sb.WriteString(fmt.Sprintf(`%s %s
 %s %s`,
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.FromAddress), msg.FromAddress),

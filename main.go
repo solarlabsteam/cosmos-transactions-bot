@@ -27,9 +27,12 @@ var (
 
 	LogLevel        string
 	Query           string
-	TelegramToken   string
-	TelegramChat    int
 	MintscanProject string
+
+	TelegramToken string
+	TelegramChat  int
+	SlackToken    string
+	SlackChat     string
 )
 
 var log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
@@ -79,6 +82,10 @@ func Execute(cmd *cobra.Command, args []string) {
 		&TelegramReporter{
 			TelegramToken: TelegramToken,
 			TelegramChat:  TelegramChat,
+		},
+		&SlackReporter{
+			SlackToken: SlackToken,
+			SlackChat:  SlackChat,
 		},
 	}
 
@@ -213,6 +220,8 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&Query, "query", "tx.hash > 1", "Tx filter to subscribe to")
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
+	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
+	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
 
 	if err := rootCmd.MarkPersistentFlagRequired("telegram-token"); err != nil {
