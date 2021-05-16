@@ -189,7 +189,7 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		case "/cosmos.gov.v1beta1.MsgVote":
 			msg = ParseMsgVote(message)
 		case "/cosmos.staking.v1beta1.MsgDelegate":
-			serializedMessage = processMsgDelegate(message)
+			msg = ParseMsgDelegate(message)
 		case "/cosmos.staking.v1beta1.MsgUndelegate":
 			serializedMessage = processMsgUndelegate(message)
 		case "/cosmos.staking.v1beta1.MsgBeginRedelegate":

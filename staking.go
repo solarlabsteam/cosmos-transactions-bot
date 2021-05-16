@@ -8,10 +8,22 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-func processMsgDelegate(message *cosmosTypes.Any) string {
+type MsgDelegate struct {
+	DelegatorAddress string
+	ValidatorAddress string
+	Denom            string
+	Amount           int64
+}
+
+func (msg MsgDelegate) Empty() bool {
+	return msg.DelegatorAddress == ""
+}
+
+func ParseMsgDelegate(message *cosmosTypes.Any) MsgDelegate {
 	var parsedMessage cosmosStakingTypes.MsgDelegate
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgDelegate")
+		return MsgDelegate{}
 	}
 
 	log.Info().
@@ -20,16 +32,26 @@ func processMsgDelegate(message *cosmosTypes.Any) string {
 		Str("denom", parsedMessage.Amount.Denom).
 		Int64("amount", parsedMessage.Amount.Amount.Int64()).
 		Msg("MsgDelegate")
-	return fmt.Sprintf(`<strong>Delegate</strong>
-<code>%d%s</code>
-<strong>From: </strong><a href="%s">%s</a>
+
+	return MsgDelegate{
+		DelegatorAddress: parsedMessage.DelegatorAddress,
+		ValidatorAddress: parsedMessage.ValidatorAddress,
+		Denom:            parsedMessage.Amount.Denom,
+		Amount:           parsedMessage.Amount.Amount.Int64(),
+	}
+}
+
+func (msg MsgDelegate) Serialize(serializer Serializer) string {
+	return fmt.Sprintf(`%s
+%s
+%s %s
 <strong>To: </strong><a href="%s">%s</a>`,
-		parsedMessage.Amount.Amount.Int64(),
-		parsedMessage.Amount.Denom,
-		makeMintscanAccountLink(parsedMessage.DelegatorAddress),
-		parsedMessage.DelegatorAddress,
-		makeMintscanValidatorLink(parsedMessage.ValidatorAddress),
-		parsedMessage.ValidatorAddress,
+		serializer.StrongSerializer("Delegate"),
+		serializer.CodeSerializer(fmt.Sprintf("%d%s", msg.Amount, msg.Denom)),
+		serializer.StrongSerializer("From: "),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.StrongSerializer("To: "),
+		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 	)
 }
 
