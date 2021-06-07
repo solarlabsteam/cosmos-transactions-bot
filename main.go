@@ -217,20 +217,12 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
-	rootCmd.PersistentFlags().StringVar(&Query, "query", "tx.hash > 1", "Tx filter to subscribe to")
+	rootCmd.PersistentFlags().StringVar(&Query, "query", "tx.height > 1", "Tx filter to subscribe to")
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
-
-	if err := rootCmd.MarkPersistentFlagRequired("telegram-token"); err != nil {
-		log.Fatal().Err(err).Msg("Could not mark flag as required")
-	}
-
-	if err := rootCmd.MarkPersistentFlagRequired("telegram-chat"); err != nil {
-		log.Fatal().Err(err).Msg("Could not mark flag as required")
-	}
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal().Err(err).Msg("Could not start application")
