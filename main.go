@@ -108,6 +108,8 @@ func Execute(cmd *cobra.Command, args []string) {
 		reporter.Init()
 	}
 
+	setDenom()
+
 	client, err := tmclient.NewWS("tcp://localhost:26657", "/websocket")
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create a client")
