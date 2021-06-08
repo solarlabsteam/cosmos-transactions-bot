@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gogo/protobuf/proto"
-
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
-
 	cosmosBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/gogo/protobuf/proto"
 )
 
 type MsgSend struct {
@@ -18,7 +16,7 @@ type MsgSend struct {
 }
 
 type Coin struct {
-	Amount int64
+	Amount float64
 	Denom  string
 }
 
@@ -39,13 +37,13 @@ func ParseMsgSend(message *cosmosTypes.Any) MsgSend {
 		log.Info().
 			Str("from", parsedMessage.FromAddress).
 			Str("to", parsedMessage.ToAddress).
-			Str("denom", coin.Denom).
-			Int64("amount", coin.Amount.Int64()).
+			Str("denom", Denom).
+			Float64("amount", float64(coin.Amount.Int64())/DenomCoefficient).
 			Msg("MsgSend")
 
 		coins = append(coins, Coin{
-			Amount: coin.Amount.Int64(),
-			Denom:  coin.Denom,
+			Amount: float64(coin.Amount.Int64()) / DenomCoefficient,
+			Denom:  Denom,
 		})
 	}
 
@@ -62,7 +60,7 @@ func (msg MsgSend) Serialize(serializer Serializer) string {
 	sb.WriteString(fmt.Sprintf("%s\n", serializer.StrongSerializer("Transfer")))
 
 	for _, coin := range msg.Coins {
-		sb.WriteString(serializer.CodeSerializer(fmt.Sprintf("%d %s", coin.Amount, coin.Denom)) + "\n")
+		sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", coin.Amount, coin.Denom)) + "\n")
 	}
 
 	sb.WriteString(fmt.Sprintf(`%s %s

@@ -12,7 +12,7 @@ type MsgDelegate struct {
 	DelegatorAddress string
 	ValidatorAddress string
 	Denom            string
-	Amount           int64
+	Amount           float64
 }
 
 func (msg MsgDelegate) Empty() bool {
@@ -29,15 +29,15 @@ func ParseMsgDelegate(message *cosmosTypes.Any) MsgDelegate {
 	log.Info().
 		Str("from", parsedMessage.DelegatorAddress).
 		Str("to", parsedMessage.ValidatorAddress).
-		Str("denom", parsedMessage.Amount.Denom).
-		Int64("amount", parsedMessage.Amount.Amount.Int64()).
+		Str("denom", Denom).
+		Float64("amount", float64(parsedMessage.Amount.Amount.Int64())/DenomCoefficient).
 		Msg("MsgDelegate")
 
 	return MsgDelegate{
 		DelegatorAddress: parsedMessage.DelegatorAddress,
 		ValidatorAddress: parsedMessage.ValidatorAddress,
-		Denom:            parsedMessage.Amount.Denom,
-		Amount:           parsedMessage.Amount.Amount.Int64(),
+		Denom:            Denom,
+		Amount:           float64(parsedMessage.Amount.Amount.Int64()) / DenomCoefficient,
 	}
 }
 
@@ -47,7 +47,7 @@ func (msg MsgDelegate) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Delegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 		serializer.StrongSerializer("To:"),
@@ -60,7 +60,7 @@ type MsgBeginRedelegate struct {
 	ValidatorSrcAddress string
 	ValidatorDstAddress string
 	Denom               string
-	Amount              int64
+	Amount              float64
 }
 
 func (msg MsgBeginRedelegate) Empty() bool {
@@ -78,16 +78,16 @@ func ParseMsgBeginRedelegate(message *cosmosTypes.Any) MsgBeginRedelegate {
 		Str("by", parsedMessage.DelegatorAddress).
 		Str("from", parsedMessage.ValidatorSrcAddress).
 		Str("to", parsedMessage.ValidatorDstAddress).
-		Str("denom", parsedMessage.Amount.Denom).
-		Int64("amount", parsedMessage.Amount.Amount.Int64()).
+		Str("denom", Denom).
+		Float64("amount", float64(parsedMessage.Amount.Amount.Int64())/DenomCoefficient).
 		Msg("MsgBeginRedelegate")
 
 	return MsgBeginRedelegate{
 		DelegatorAddress:    parsedMessage.DelegatorAddress,
 		ValidatorSrcAddress: parsedMessage.ValidatorSrcAddress,
 		ValidatorDstAddress: parsedMessage.ValidatorDstAddress,
-		Denom:               parsedMessage.Amount.Denom,
-		Amount:              parsedMessage.Amount.Amount.Int64(),
+		Denom:               Denom,
+		Amount:              float64(parsedMessage.Amount.Amount.Int64()) / DenomCoefficient,
 	}
 }
 
@@ -98,7 +98,7 @@ func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Redelegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
 		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 		serializer.StrongSerializer("From:"),
@@ -112,7 +112,7 @@ type MsgUndelegate struct {
 	DelegatorAddress string
 	ValidatorAddress string
 	Denom            string
-	Amount           int64
+	Amount           float64
 }
 
 func (msg MsgUndelegate) Empty() bool {
@@ -129,15 +129,15 @@ func ParseMsgUndelegate(message *cosmosTypes.Any) MsgUndelegate {
 	log.Info().
 		Str("from", parsedMessage.ValidatorAddress).
 		Str("by", parsedMessage.DelegatorAddress).
-		Str("denom", parsedMessage.Amount.Denom).
-		Int64("amount", parsedMessage.Amount.Amount.Int64()).
+		Str("denom", Denom).
+		Float64("amount", float64(parsedMessage.Amount.Amount.Int64())/DenomCoefficient).
 		Msg("MsgUndelegate")
 
 	return MsgUndelegate{
 		DelegatorAddress: parsedMessage.DelegatorAddress,
 		ValidatorAddress: parsedMessage.ValidatorAddress,
-		Denom:            parsedMessage.Amount.Denom,
-		Amount:           parsedMessage.Amount.Amount.Int64(),
+		Denom:            Denom,
+		Amount:           float64(parsedMessage.Amount.Amount.Int64()) / DenomCoefficient,
 	}
 }
 
@@ -147,7 +147,7 @@ func (msg MsgUndelegate) Serialize(serializer Serializer) string {
 %s %s
 %s %s`,
 		serializer.StrongSerializer("Undelegate"),
-		serializer.CodeSerializer(fmt.Sprintf("%d %s", msg.Amount, msg.Denom)),
+		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
 		serializer.StrongSerializer("By:"),

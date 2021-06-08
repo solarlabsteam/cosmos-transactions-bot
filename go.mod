@@ -13,5 +13,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/tendermint/tendermint v0.34.10
+	golang.org/x/text v0.3.3
+	google.golang.org/grpc v1.37.0
 	gopkg.in/tucnak/telebot.v2 v2.3.5
 )

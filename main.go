@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,12 +15,18 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	json "github.com/tendermint/tendermint/libs/json"
+	"google.golang.org/grpc"
 
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmclient "github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonRpcTypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	events "github.com/tendermint/tendermint/types"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var (
@@ -33,11 +40,18 @@ var (
 	TelegramChat  int
 	SlackToken    string
 	SlackChat     string
+
+	NodeAddress string
+
+	Denom            string
+	DenomCoefficient float64
+
+	Printer = message.NewPrinter(language.English)
+
+	reporters []Reporter
+
+	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 )
-
-var log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
-
-var reporters []Reporter
 
 var rootCmd = &cobra.Command{
 	Use:  "cosmos-transactions-bot",
@@ -214,8 +228,53 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 	return report
 }
 
+func setDenom() {
+	grpcConn, err := grpc.Dial(
+		NodeAddress,
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	defer grpcConn.Close()
+
+	bankClient := banktypes.NewQueryClient(grpcConn)
+	denoms, err := bankClient.DenomsMetadata(
+		context.Background(),
+		&banktypes.QueryDenomsMetadataRequest{},
+	)
+
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error querying denom")
+	}
+
+	metadata := denoms.Metadatas[0] // always using the first one
+	if Denom == "" {                // using display currency
+		Denom = metadata.Display
+	}
+
+	for _, unit := range metadata.DenomUnits {
+		log.Debug().
+			Str("denom", unit.Denom).
+			Uint32("exponent", unit.Exponent).
+			Msg("Denom info")
+		if unit.Denom == Denom {
+			DenomCoefficient = math.Pow10(int(unit.Exponent))
+			log.Info().
+				Str("denom", Denom).
+				Float64("coefficient", DenomCoefficient).
+				Msg("Got denom info")
+			return
+		}
+	}
+
+	log.Fatal().Msg("Could not find the denom info")
+}
+
 func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
+	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin denom")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
 	rootCmd.PersistentFlags().StringVar(&Query, "query", "tx.height > 1", "Tx filter to subscribe to")
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
@@ -223,6 +282,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
+	rootCmd.PersistentFlags().StringVar(&NodeAddress, "node", "localhost:9090", "RPC node address")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal().Err(err).Msg("Could not start application")
