@@ -81,11 +81,20 @@ You can pass the artuments to the executable file to configure it. Here is the p
 - `--query` - See below.
 
 
-Additionally, you can pass a `--config` flag with a path to your config file (I use `.toml`, but anything supported by [viper](https://github.com/spf13/viper) should work).
+Additionally, you can pass a `--config` flag with a path to your config file (we use `.toml`, but anything supported by [viper](https://github.com/spf13/viper) should work).
 
 ### Query
 
 You can specify a `--query` that serves as a filter. If the transaction does not this filter, this program won't send a notification on that. The default filter is `tx.height > 1`, which matches all transactions. You would probably want to use your own filter.
+
+For example, we're using this tool to monitor new delegations for our validator and this is what we have in our `.toml` configuration file:
+
+```
+# sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf is SOLAR Validator on Sentinel
+query = "delegate.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'"
+```
+
+Unfortunately there is no OR operator support, so you cannot monitor different events. See [this](https://stackoverflow.com/questions/65709248/how-to-use-an-or-condition-with-the-tendermint-websocket-subscribe-method) and [this](https://github.com/tendermint/tendermint/issues/5206) for context. You can spawn a few instances of the app with different filters though.
 
 See [the documentation](https://docs.tendermint.com/master/rpc/#/Websocket/subscribe) for more information.
 
