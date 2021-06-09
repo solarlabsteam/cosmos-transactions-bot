@@ -33,7 +33,7 @@ var (
 	ConfigPath string
 
 	LogLevel        string
-	Query           string
+	Queries         []string
 	MintscanProject string
 
 	TelegramToken string
@@ -123,16 +123,17 @@ func Execute(cmd *cobra.Command, args []string) {
 	}
 	defer client.Stop() // nolint
 
-	err = client.Subscribe(context.Background(), Query)
-	if err != nil {
-		log.Error().Err(err).Str("query", Query).Msg("Failed to subscribe to query")
-		os.Exit(1)
+	for _, query := range Queries {
+		if err = client.Subscribe(context.Background(), query); err != nil {
+			log.Fatal().Err(err).Str("query", query).Msg("Failed to subscribe to query")
+		}
+
+		log.Info().Str("query", query).Msg("Listening for incoming transactions")
+
 	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-
-	log.Info().Str("query", Query).Msg("Listening for incoming transactions")
 
 	for {
 		select {
@@ -278,7 +279,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
 	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin denom")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
-	rootCmd.PersistentFlags().StringVar(&Query, "query", "tx.height > 1", "Tx filter to subscribe to")
+	rootCmd.PersistentFlags().StringSliceVar(&Queries, "query", []string{"tx.height > 1"}, "Tx filter to subscribe to")
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
