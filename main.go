@@ -90,7 +90,11 @@ var rootCmd = &cobra.Command{
 						aString[i] = v.(string)
 					}
 
-					sliceVal.Replace(aString)
+					if err := sliceVal.Replace(aString); err != nil {
+						log.Fatal().
+							Err(err).
+							Msg("Could not replace value")
+					}
 					return
 				}
 
