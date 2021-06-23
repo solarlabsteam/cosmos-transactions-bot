@@ -85,7 +85,7 @@ Additionally, you can pass a `--config` flag with a path to your config file (we
 
 ### Query
 
-You can specify a `--query` that serves as a filter. If the transaction does not this filter, this program won't send a notification on that. The default filter is `tx.height > 1`, which matches all transactions. You would probably want to use your own filter.
+You can specify a `--query` that serves as a filter. If the transaction does not match this filter, this program won't send a notification on that. The default filter is `tx.height > 1`, which matches all transactions. You would probably want to use your own filter.
 
 For example, we're using this tool to monitor new delegations for our validator and this is what we have in our `.toml` configuration file:
 

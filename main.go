@@ -73,6 +73,27 @@ var rootCmd = &cobra.Command{
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			if !f.Changed && viper.IsSet(f.Name) {
 				val := viper.Get(f.Name)
+
+				// array values
+				if sliceVal, ok := f.Value.(pflag.SliceValue); ok {
+					log.Trace().Str("name", f.Name).Msg("Treating flag as slice value")
+
+					aInterface, ok := val.([]interface{})
+					if !ok {
+						log.Fatal().
+							Str("name", f.Name).
+							Msg("Could not parse Viper value as array. Probably you've declared the value as not array?")
+					}
+
+					aString := make([]string, len(aInterface))
+					for i, v := range aInterface {
+						aString[i] = v.(string)
+					}
+
+					sliceVal.Replace(aString)
+					return
+				}
+
 				if err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val)); err != nil {
 					log.Fatal().Err(err).Msg("Could not set flag")
 				}
