@@ -51,6 +51,8 @@ var (
 	reporters []Reporter
 
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
+
+	SentTransactions map[string]bool
 )
 
 var rootCmd = &cobra.Command{
@@ -217,6 +219,11 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 	txMessages := tx.GetBody().GetMessages()
 	report.Tx = parseTx(txResult)
 
+	if _, ok := SentTransactions[txHash]; ok {
+		log.Debug().Str("hash", txHash).Msg("Transaction already sent, skipping.")
+		return Report{}
+	}
+
 	log.Info().
 		Int64("height", txResult.Height).
 		Str("memo", tx.GetBody().GetMemo()).
@@ -252,6 +259,8 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 			report.Msgs = append(report.Msgs, msg)
 		}
 	}
+
+	SentTransactions[txHash] = true
 
 	return report
 }
