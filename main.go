@@ -52,7 +52,7 @@ var (
 
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
-	SentTransactions map[string]bool
+	SentTransactions map[string]bool = make(map[string]bool)
 )
 
 var rootCmd = &cobra.Command{
