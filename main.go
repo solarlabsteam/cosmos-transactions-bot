@@ -266,6 +266,16 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 }
 
 func setDenom() {
+	// if --denom and --denom-coefficient are both provided, use them
+	// instead of fetching them via gRPC. Can be useful for networks like osmosis.
+	if Denom != "" && DenomCoefficient != 0 {
+		log.Info().
+			Str("denom", Denom).
+			Float64("coefficient", DenomCoefficient).
+			Msg("Using provided denom and coefficient.")
+		return
+	}
+
 	grpcConn, err := grpc.Dial(
 		NodeAddress,
 		grpc.WithInsecure(),
@@ -312,6 +322,7 @@ func setDenom() {
 func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
 	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin denom")
+	rootCmd.PersistentFlags().Float64Var(&DenomCoefficient, "denom-coefficient", 0, "Denom coefficient")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
 	rootCmd.PersistentFlags().StringSliceVar(&Queries, "query", []string{"tx.height > 1"}, "Tx filter to subscribe to")
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
