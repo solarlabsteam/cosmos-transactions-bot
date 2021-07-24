@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/gogo/protobuf/proto"
@@ -137,7 +138,14 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	setDenom()
 
-	client, err := tmclient.NewWS("tcp://localhost:26657", "/websocket")
+	client, err := tmclient.NewWS(
+		"tcp://localhost:26657",
+		"/websocket",
+		tmclient.PingPeriod(5*time.Second),
+		tmclient.OnReconnect(func() {
+			log.Info().Msg("Reconnected to websocket...")
+		}),
+	)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create a client")
 		os.Exit(1)
