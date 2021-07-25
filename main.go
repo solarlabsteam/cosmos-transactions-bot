@@ -51,7 +51,7 @@ var (
 
 	reporters []Reporter
 
-	client *stmclient.WSClient
+	client *tmclient.WSClient
 
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
