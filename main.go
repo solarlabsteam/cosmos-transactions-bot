@@ -51,6 +51,8 @@ var (
 
 	reporters []Reporter
 
+	client *stmclient.WSClient
+
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
 	SentTransactions map[string]bool = make(map[string]bool)
@@ -138,12 +140,13 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	setDenom()
 
-	client, err := tmclient.NewWS(
+	client, err = tmclient.NewWS(
 		"tcp://localhost:26657",
 		"/websocket",
 		tmclient.PingPeriod(5*time.Second),
 		tmclient.OnReconnect(func() {
 			log.Info().Msg("Reconnected to websocket...")
+			subscribeToUpdates()
 		}),
 	)
 	if err != nil {
@@ -158,14 +161,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	}
 	defer client.Stop() // nolint
 
-	for _, query := range Queries {
-		if err = client.Subscribe(context.Background(), query); err != nil {
-			log.Fatal().Err(err).Str("query", query).Msg("Failed to subscribe to query")
-		}
-
-		log.Info().Str("query", query).Msg("Listening for incoming transactions")
-
-	}
+	subscribeToUpdates()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -177,6 +173,16 @@ func Execute(cmd *cobra.Command, args []string) {
 		case <-quit:
 			os.Exit(0)
 		}
+	}
+}
+
+func subscribeToUpdates() {
+	for _, query := range Queries {
+		if err := client.Subscribe(context.Background(), query); err != nil {
+			log.Fatal().Err(err).Str("query", query).Msg("Failed to subscribe to query")
+		}
+
+		log.Info().Str("query", query).Msg("Listening for incoming transactions")
 	}
 }
 
