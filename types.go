@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Msg interface {
 	Serialize(Serializer Serializer) string
 	Empty() bool
@@ -27,4 +32,18 @@ type Reporter interface {
 	SendReport(Report) error
 	Name() string
 	Serializer() Serializer
+}
+
+func (s Serializer) getWalletWithLabel(address string) string {
+	label, labelFound := labelsConfigManager.getWalletLabel(address)
+
+	var sb strings.Builder
+
+	sb.WriteString(s.LinksSerializer(makeMintscanAccountLink(address), address))
+
+	if labelFound {
+		sb.WriteString(fmt.Sprintf(" (%s)", s.CodeSerializer(label)))
+	}
+
+	return sb.String()
 }

@@ -19,8 +19,6 @@ func (msg MsgWithdrawDelegatorReward) Empty() bool {
 }
 
 func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
-	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
-
 	var sb strings.Builder
 
 	sb.WriteString(serializer.StrongSerializer("Withdraw rewards") + "\n")
@@ -31,15 +29,8 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 
 	sb.WriteString(fmt.Sprintf("%s %s",
 		serializer.StrongSerializer("To:"),
-		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.getWalletWithLabel(msg.DelegatorAddress),
 	))
-
-	if labelFound {
-		sb.WriteString(fmt.Sprintf(
-			" (%s)",
-			serializer.CodeSerializer(label),
-		))
-	}
 
 	return sb.String()
 }
@@ -97,7 +88,7 @@ func (msg MsgSetWithdrawAddress) Serialize(serializer Serializer) string {
 		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
 		serializer.StrongSerializer("New withdraw address: "),
-		serializer.LinksSerializer(makeMintscanAccountLink(msg.WithdrawAddress), msg.WithdrawAddress),
+		serializer.getWalletWithLabel(msg.WithdrawAddress),
 	)
 }
 

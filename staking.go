@@ -43,25 +43,14 @@ func ParseMsgDelegate(message *cosmosTypes.Any) MsgDelegate {
 }
 
 func (msg MsgDelegate) Serialize(serializer Serializer) string {
-	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
-
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Delegate") + "\n")
 	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
 
-	sb.WriteString(fmt.Sprintf("%s %s",
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
-		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.getWalletWithLabel(msg.DelegatorAddress),
 	))
-
-	if labelFound {
-		sb.WriteString(fmt.Sprintf(
-			" (%s)",
-			serializer.CodeSerializer(label),
-		))
-	}
-
-	sb.WriteString("\n")
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("To:"),
@@ -108,25 +97,14 @@ func ParseMsgBeginRedelegate(message *cosmosTypes.Any) MsgBeginRedelegate {
 }
 
 func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
-	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
-
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Redelegate") + "\n")
 	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
 
-	sb.WriteString(fmt.Sprintf("%s %s",
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("By:"),
-		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.getWalletWithLabel(msg.DelegatorAddress),
 	))
-
-	if labelFound {
-		sb.WriteString(fmt.Sprintf(
-			" (%s)",
-			serializer.CodeSerializer(label),
-		))
-	}
-
-	sb.WriteString("\n")
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
@@ -175,8 +153,6 @@ func ParseMsgUndelegate(message *cosmosTypes.Any) MsgUndelegate {
 }
 
 func (msg MsgUndelegate) Serialize(serializer Serializer) string {
-	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
-
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Undelegate") + "\n")
 	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
@@ -188,15 +164,8 @@ func (msg MsgUndelegate) Serialize(serializer Serializer) string {
 
 	sb.WriteString(fmt.Sprintf("%s %s",
 		serializer.StrongSerializer("To:"),
-		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+		serializer.getWalletWithLabel(msg.DelegatorAddress),
 	))
-
-	if labelFound {
-		sb.WriteString(fmt.Sprintf(
-			" (%s)",
-			serializer.CodeSerializer(label),
-		))
-	}
 
 	return sb.String()
 }
