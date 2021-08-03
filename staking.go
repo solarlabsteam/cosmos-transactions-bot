@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cosmosStakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -42,17 +43,32 @@ func ParseMsgDelegate(message *cosmosTypes.Any) MsgDelegate {
 }
 
 func (msg MsgDelegate) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s
-%s
-%s %s
-%s %s`,
-		serializer.StrongSerializer("Delegate"),
-		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
+	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
+
+	var sb strings.Builder
+	sb.WriteString(serializer.StrongSerializer("Delegate") + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s",
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+	))
+
+	if labelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(label),
+		))
+	}
+
+	sb.WriteString("\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
-	)
+	))
+
+	return sb.String()
 }
 
 type MsgBeginRedelegate struct {
@@ -92,20 +108,37 @@ func ParseMsgBeginRedelegate(message *cosmosTypes.Any) MsgBeginRedelegate {
 }
 
 func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s
-%s
-%s %s
-%s %s
-%s %s`,
-		serializer.StrongSerializer("Redelegate"),
-		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
+	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
+
+	var sb strings.Builder
+	sb.WriteString(serializer.StrongSerializer("Redelegate") + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s",
 		serializer.StrongSerializer("By:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
+	))
+
+	if labelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(label),
+		))
+	}
+
+	sb.WriteString("\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorSrcAddress), msg.ValidatorSrcAddress),
+	))
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorDstAddress), msg.ValidatorDstAddress),
-	)
+	))
+
+	return sb.String()
 }
 
 type MsgUndelegate struct {
@@ -142,15 +175,28 @@ func ParseMsgUndelegate(message *cosmosTypes.Any) MsgUndelegate {
 }
 
 func (msg MsgUndelegate) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s
-%s
-%s %s
-%s %s`,
-		serializer.StrongSerializer("Undelegate"),
-		serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)),
+	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
+
+	var sb strings.Builder
+	sb.WriteString(serializer.StrongSerializer("Undelegate") + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
-		serializer.StrongSerializer("By:"),
+	))
+
+	sb.WriteString(fmt.Sprintf("%s %s",
+		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
-	)
+	))
+
+	if labelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(label),
+		))
+	}
+
+	return sb.String()
 }
