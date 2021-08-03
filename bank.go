@@ -55,6 +55,9 @@ func ParseMsgSend(message *cosmosTypes.Any) MsgSend {
 }
 
 func (msg MsgSend) Serialize(serializer Serializer) string {
+	fromLabel, fromLabelFound := labelsConfigManager.getWalletLabel(msg.FromAddress)
+	toLabel, toLabelFound := labelsConfigManager.getWalletLabel(msg.ToAddress)
+
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("%s\n", serializer.StrongSerializer("Transfer")))
@@ -63,13 +66,31 @@ func (msg MsgSend) Serialize(serializer Serializer) string {
 		sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", coin.Amount, coin.Denom)) + "\n")
 	}
 
-	sb.WriteString(fmt.Sprintf(`%s %s
-%s %s`,
+	sb.WriteString(fmt.Sprintf(`%s %s`,
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.FromAddress), msg.FromAddress),
+	))
+
+	if fromLabelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(fromLabel),
+		))
+	}
+
+	sb.WriteString("\n")
+
+	sb.WriteString(fmt.Sprintf(`%s %s`,
 		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.ToAddress), msg.ToAddress),
 	))
+
+	if toLabelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(toLabel),
+		))
+	}
 
 	return sb.String()
 }

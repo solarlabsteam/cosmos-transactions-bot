@@ -31,7 +31,8 @@ import (
 )
 
 var (
-	ConfigPath string
+	ConfigPath       string
+	LabelsConfigPath string
 
 	LogLevel        string
 	Queries         []string
@@ -56,6 +57,8 @@ var (
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
 	SentTransactions map[string]bool = make(map[string]bool)
+
+	labelsConfigManager *LabelsConfigManager
 )
 
 var rootCmd = &cobra.Command{
@@ -137,6 +140,8 @@ func Execute(cmd *cobra.Command, args []string) {
 		log.Info().Str("name", reporter.Name()).Msg("Init reporter")
 		reporter.Init()
 	}
+
+	labelsConfigManager = initLabelsConfig(LabelsConfigPath)
 
 	setDenom()
 
@@ -335,6 +340,7 @@ func setDenom() {
 
 func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
+	rootCmd.PersistentFlags().StringVar(&LabelsConfigPath, "labels-config", "", "Labels config file path")
 	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin denom")
 	rootCmd.PersistentFlags().Float64Var(&DenomCoefficient, "denom-coefficient", 0, "Denom coefficient")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")

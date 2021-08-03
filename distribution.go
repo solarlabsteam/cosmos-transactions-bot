@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cosmosDistributionTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -18,15 +19,29 @@ func (msg MsgWithdrawDelegatorReward) Empty() bool {
 }
 
 func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s
-%s %s
-%s %s`,
-		serializer.StrongSerializer("Withdraw rewards"),
+	label, labelFound := labelsConfigManager.getWalletLabel(msg.DelegatorAddress)
+
+	var sb strings.Builder
+
+	sb.WriteString(serializer.StrongSerializer("Withdraw rewards") + "\n")
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
 		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+	))
+
+	sb.WriteString(fmt.Sprintf("%s %s",
 		serializer.StrongSerializer("To:"),
 		serializer.LinksSerializer(makeMintscanAccountLink(msg.DelegatorAddress), msg.DelegatorAddress),
-	)
+	))
+
+	if labelFound {
+		sb.WriteString(fmt.Sprintf(
+			" (%s)",
+			serializer.CodeSerializer(label),
+		))
+	}
+
+	return sb.String()
 }
 
 func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any) MsgWithdrawDelegatorReward {
