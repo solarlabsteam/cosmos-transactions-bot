@@ -124,7 +124,7 @@ func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w ht
 	if len(args) >= 2 {
 		labelsConfigManager.setWalletLabel(args[0], args[1])
 		text = fmt.Sprintf(
-			"Successfully set alias for %s: %s",
+			"Successfully set alias for %s: %s\n",
 			reporter.MarkdownSerializer.LinksSerializer(makeMintscanAccountLink(args[0]), args[0]),
 			reporter.MarkdownSerializer.CodeSerializer(args[1]),
 		)
