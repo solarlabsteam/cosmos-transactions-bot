@@ -40,8 +40,11 @@ var (
 
 	TelegramToken string
 	TelegramChat  int
-	SlackToken    string
-	SlackChat     string
+
+	SlackToken         string
+	SlackChat          string
+	SlackSigningSecret string
+	SlackListenAddress string
 
 	NodeAddress string
 
@@ -131,8 +134,10 @@ func Execute(cmd *cobra.Command, args []string) {
 			TelegramChat:  TelegramChat,
 		},
 		&SlackReporter{
-			SlackToken: SlackToken,
-			SlackChat:  SlackChat,
+			SlackToken:         SlackToken,
+			SlackChat:          SlackChat,
+			SlackSigningSecret: SlackSigningSecret,
+			SlackListenAddress: SlackListenAddress,
 		},
 	}
 
@@ -345,10 +350,15 @@ func main() {
 	rootCmd.PersistentFlags().Float64Var(&DenomCoefficient, "denom-coefficient", 0, "Denom coefficient")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
 	rootCmd.PersistentFlags().StringSliceVar(&Queries, "query", []string{"tx.height > 1"}, "Tx filter to subscribe to")
+
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
+
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
+	rootCmd.PersistentFlags().StringVar(&SlackSigningSecret, "slack-signing-secret", "", "Slack signing secret for slash commands handling")
+	rootCmd.PersistentFlags().StringVar(&SlackListenAddress, "slack-listen-address", ":9500", "An address where Slack slash command handler would be exposed at")
+
 	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
 	rootCmd.PersistentFlags().StringVar(&NodeAddress, "node", "localhost:9090", "RPC node address")
 
