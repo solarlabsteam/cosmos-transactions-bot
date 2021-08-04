@@ -17,6 +17,10 @@ type SlackReporter struct {
 	SlackSigningSecret string
 	SlackListenAddress string
 
+	SlackSetAliasCommand    string
+	SlackClearAliasCommand  string
+	SlackListAliasesCommand string
+
 	SlackClient        slack.Client
 	MarkdownSerializer Serializer
 }
@@ -92,8 +96,8 @@ func (reporter *SlackReporter) InitSlashHandler() {
 			Msg("Received command")
 
 		switch s.Command {
-		case "/set-alias":
-			reporter.processAddAliasCommand(s, w, r)
+		case reporter.SlackSetAliasCommand:
+			reporter.processSetAliasCommand(s, w, r)
 		default:
 			log.Debug().Msg("Unsupported command, skipping.")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -111,7 +115,7 @@ func (reporter *SlackReporter) InitSlashHandler() {
 
 }
 
-func (reporter *SlackReporter) processAddAliasCommand(s slack.SlashCommand, w http.ResponseWriter, r *http.Request) {
+func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w http.ResponseWriter, r *http.Request) {
 	params := &slack.Msg{Text: s.Text}
 	b, err := json.Marshal(params)
 	if err != nil {

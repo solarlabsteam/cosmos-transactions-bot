@@ -41,12 +41,16 @@ var (
 	TelegramToken string
 	TelegramChat  int
 
-	SlackToken         string
-	SlackChat          string
-	SlackSigningSecret string
-	SlackListenAddress string
+	SlackToken              string
+	SlackChat               string
+	SlackSigningSecret      string
+	SlackListenAddress      string
+	SlackSetAliasCommand    string
+	SlackClearAliasCommand  string
+	SlackListAliasesCommand string
 
-	NodeAddress string
+	NodeAddress          string
+	TendermintRpcAddress string
 
 	Denom            string
 	DenomCoefficient float64
@@ -134,10 +138,13 @@ func Execute(cmd *cobra.Command, args []string) {
 			TelegramChat:  TelegramChat,
 		},
 		&SlackReporter{
-			SlackToken:         SlackToken,
-			SlackChat:          SlackChat,
-			SlackSigningSecret: SlackSigningSecret,
-			SlackListenAddress: SlackListenAddress,
+			SlackToken:              SlackToken,
+			SlackChat:               SlackChat,
+			SlackSigningSecret:      SlackSigningSecret,
+			SlackListenAddress:      SlackListenAddress,
+			SlackSetAliasCommand:    SlackSetAliasCommand,
+			SlackClearAliasCommand:  SlackClearAliasCommand,
+			SlackListAliasesCommand: SlackListAliasesCommand,
 		},
 	}
 
@@ -151,7 +158,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	setDenom()
 
 	client, err = tmclient.NewWS(
-		"tcp://localhost:26657",
+		TendermintRpcAddress,
 		"/websocket",
 		tmclient.PingPeriod(5*time.Second),
 		tmclient.OnReconnect(func() {
@@ -358,9 +365,13 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
 	rootCmd.PersistentFlags().StringVar(&SlackSigningSecret, "slack-signing-secret", "", "Slack signing secret for slash commands handling")
 	rootCmd.PersistentFlags().StringVar(&SlackListenAddress, "slack-listen-address", ":9500", "An address where Slack slash command handler would be exposed at")
+	rootCmd.PersistentFlags().StringVar(&SlackSetAliasCommand, "slack-set-alias-command", "/set-alias", "Slack slash command to set alias")
+	rootCmd.PersistentFlags().StringVar(&SlackClearAliasCommand, "slack-clear-alias-command", "/clear-alias", "Slack slash command to clear alias")
+	rootCmd.PersistentFlags().StringVar(&SlackListAliasesCommand, "slack-list-aliases-command", "/list-aliases", "Slack slash command to list aliases")
 
 	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
 	rootCmd.PersistentFlags().StringVar(&NodeAddress, "node", "localhost:9090", "RPC node address")
+	rootCmd.PersistentFlags().StringVar(&TendermintRpcAddress, "tendermint-rpc", "tcp://localhost:26657", "Tendermint RPC node address")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal().Err(err).Msg("Could not start application")
