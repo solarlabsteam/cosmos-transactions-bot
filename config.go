@@ -88,6 +88,14 @@ func (r *LabelsConfigManager) setWalletLabel(address string, label string) {
 
 	r.config.WalletLabels[address] = label
 	r.saveYamlConfig()
+}
 
-	return
+func (r *LabelsConfigManager) clearWalletLabel(address string) {
+	if !r.enabled {
+		log.Debug().Msg("Labels config not loaded, cannot cear wallet label.")
+		return
+	}
+
+	delete(r.config.WalletLabels, address)
+	r.saveYamlConfig()
 }

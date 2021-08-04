@@ -97,7 +97,11 @@ func (reporter *SlackReporter) InitSlashHandler() {
 
 		switch s.Command {
 		case reporter.SlackSetAliasCommand:
-			reporter.processSetAliasCommand(s, w, r)
+			reporter.processSetAliasCommand(s, w)
+		case reporter.SlackSetAliasCommand:
+			reporter.processClearAliasCommand(s, w)
+		case reporter.SlackListAliasesCommand:
+			reporter.processListAliasesCommand(s, w)
 		default:
 			log.Debug().Msg("Unsupported command, skipping.")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -113,7 +117,7 @@ func (reporter *SlackReporter) InitSlashHandler() {
 	}
 }
 
-func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w http.ResponseWriter, r *http.Request) {
+func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w http.ResponseWriter) {
 	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt; &lt;alias&gt;", reporter.SlackSetAliasCommand)
 
 	args := strings.SplitAfterN(s.Text, " ", 2)
@@ -128,6 +132,47 @@ func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w ht
 		log.Info().Msg("/set-alias: args length < 2")
 	}
 
+	if err := writeMessage(text, w); err != nil {
+		log.Error().Err(err).Msg("Could not send response to /set-alias command")
+	}
+}
+
+func (reporter *SlackReporter) processClearAliasCommand(s slack.SlashCommand, w http.ResponseWriter) {
+	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt;", reporter.SlackClearAliasCommand)
+
+	if strings.TrimSpace(s.Text) != "" {
+		labelsConfigManager.clearWalletLabel(s.Text)
+		text = fmt.Sprintf(
+			"Successfully cleared alias for %s",
+			reporter.MarkdownSerializer.LinksSerializer(makeMintscanAccountLink(s.Text), s.Text),
+		)
+	} else {
+		log.Info().Msg("/clear-alias: args length == ''")
+	}
+
+	if err := writeMessage(text, w); err != nil {
+		log.Error().Err(err).Msg("Could not send response to /clear-alias command")
+	}
+}
+
+func (reporter *SlackReporter) processListAliasesCommand(s slack.SlashCommand, w http.ResponseWriter) {
+	var sb strings.Builder
+	sb.WriteString("Wallet aliases:\n")
+
+	for key, value := range labelsConfigManager.config.WalletLabels {
+		sb.WriteString(fmt.Sprintf(
+			"- %s: %s",
+			reporter.MarkdownSerializer.LinksSerializer(makeMintscanAccountLink(key), key),
+			reporter.MarkdownSerializer.CodeSerializer(value),
+		))
+	}
+
+	if err := writeMessage(sb.String(), w); err != nil {
+		log.Error().Err(err).Msg("Could not send response to /clear-alias command")
+	}
+}
+
+func writeMessage(text string, w http.ResponseWriter) error {
 	params := &slack.Msg{
 		Text:         text,
 		ResponseType: "in_channel",
@@ -135,12 +180,13 @@ func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w ht
 	b, err := json.Marshal(params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if _, err := w.Write(b); err != nil {
-		log.Error().Err(err).Msg("Could not send response to /set-alias command")
-	}
+	_, err = w.Write(b)
+	return err
+
 }
 
 func (r SlackReporter) Enabled() bool {
