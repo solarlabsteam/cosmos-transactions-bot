@@ -98,7 +98,7 @@ func (reporter *SlackReporter) InitSlashHandler() {
 		switch s.Command {
 		case reporter.SlackSetAliasCommand:
 			reporter.processSetAliasCommand(s, w)
-		case reporter.SlackSetAliasCommand:
+		case reporter.SlackClearAliasCommand:
 			reporter.processClearAliasCommand(s, w)
 		case reporter.SlackListAliasesCommand:
 			reporter.processListAliasesCommand(s, w)
