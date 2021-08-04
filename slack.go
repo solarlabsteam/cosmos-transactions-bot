@@ -120,7 +120,8 @@ func (reporter *SlackReporter) InitSlashHandler() {
 func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w http.ResponseWriter) {
 	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt; &lt;alias&gt;", reporter.SlackSetAliasCommand)
 
-	args := strings.SplitAfterN(s.Text, " ", 2)
+	args := strings.SplitN(s.Text, " ", 2)
+
 	if len(args) >= 2 {
 		labelsConfigManager.setWalletLabel(args[0], args[1])
 		text = fmt.Sprintf(

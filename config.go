@@ -92,7 +92,7 @@ func (r *LabelsConfigManager) setWalletLabel(address string, label string) {
 
 func (r *LabelsConfigManager) clearWalletLabel(address string) {
 	if !r.enabled {
-		log.Debug().Msg("Labels config not loaded, cannot cear wallet label.")
+		log.Debug().Msg("Labels config not loaded, cannot clear wallet label.")
 		return
 	}
 
