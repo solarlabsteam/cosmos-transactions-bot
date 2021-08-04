@@ -57,7 +57,7 @@ func (r *SlackReporter) Init() {
 		},
 	}
 
-	r.InitSlashHandler()
+	go r.InitSlashHandler()
 }
 
 func (reporter *SlackReporter) InitSlashHandler() {
@@ -107,16 +107,31 @@ func (reporter *SlackReporter) InitSlashHandler() {
 		log.Debug().Msg("Slash command processed.")
 	})
 
+	log.Info().Str("address", reporter.SlackListenAddress).Msg("Slack slash commands handler is listening")
 	if err := http.ListenAndServe(reporter.SlackListenAddress, nil); err != nil {
 		log.Fatal().Err(err).Msg("Could not start Slack slash commands handler")
 	}
-
-	log.Info().Str("address", reporter.SlackListenAddress).Msg("Slack slash commands handler is listening")
-
 }
 
 func (reporter *SlackReporter) processSetAliasCommand(s slack.SlashCommand, w http.ResponseWriter, r *http.Request) {
-	params := &slack.Msg{Text: s.Text}
+	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt; &lt;alias&gt;", reporter.SlackSetAliasCommand)
+
+	args := strings.SplitAfterN(s.Text, " ", 2)
+	if len(args) >= 2 {
+		labelsConfigManager.setWalletLabel(args[0], args[1])
+		text = fmt.Sprintf(
+			"Successfully set alias for %s: %s",
+			reporter.MarkdownSerializer.LinksSerializer(makeMintscanAccountLink(args[0]), args[0]),
+			reporter.MarkdownSerializer.CodeSerializer(args[1]),
+		)
+	} else {
+		log.Info().Msg("/set-alias: args length < 2")
+	}
+
+	params := &slack.Msg{
+		Text:         text,
+		ResponseType: "in_channel",
+	}
 	b, err := json.Marshal(params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

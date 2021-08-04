@@ -55,21 +55,20 @@ func loadConfigFromYaml(path string) LabelsConfig {
 	return config
 }
 
-// TODO: readd this when we'll able to set labels via app
-// func (r *LabelsConfigManager) saveYamlConfig() {
-// 	f, err := os.Create(LabelsConfigPath)
-// 	if err != nil {
-// 		log.Fatal().Err(err).Msg("Could not open labels config when saving")
-// 	}
-// 	if err := toml.NewEncoder(f).Encode(r.config); err != nil {
-// 		log.Fatal().Err(err).Msg("Could not save labels config")
-// 	}
-// 	if err := f.Close(); err != nil {
-// 		log.Fatal().Err(err).Msg("Could not close labels config when saving")
-// 	}
+func (r *LabelsConfigManager) saveYamlConfig() {
+	f, err := os.Create(LabelsConfigPath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not open labels config when saving")
+	}
+	if err := toml.NewEncoder(f).Encode(r.config); err != nil {
+		log.Fatal().Err(err).Msg("Could not save labels config")
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal().Err(err).Msg("Could not close labels config when saving")
+	}
 
-// 	log.Debug().Msg("Labels config is updated successfully.")
-// }
+	log.Debug().Msg("Labels config is updated successfully.")
+}
 
 func (r *LabelsConfigManager) getWalletLabel(address string) (string, bool) {
 	if !r.enabled {
@@ -79,4 +78,16 @@ func (r *LabelsConfigManager) getWalletLabel(address string) (string, bool) {
 
 	label, found := r.config.WalletLabels[address]
 	return label, found
+}
+
+func (r *LabelsConfigManager) setWalletLabel(address string, label string) {
+	if !r.enabled {
+		log.Debug().Msg("Labels config not loaded, cannot set wallet label.")
+		return
+	}
+
+	r.config.WalletLabels[address] = label
+	r.saveYamlConfig()
+
+	return
 }
