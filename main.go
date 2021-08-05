@@ -366,9 +366,9 @@ func main() {
 
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
-	rootCmd.PersistentFlags().StringVar(&TelegramSetAliasCommand, "telegram-set-alias-command", "/set-alias", "Telegram slash command to set alias")
-	rootCmd.PersistentFlags().StringVar(&TelegramClearAliasCommand, "telegram-clear-alias-command", "/clear-alias", "Telegram slash command to clear alias")
-	rootCmd.PersistentFlags().StringVar(&TelegramListAliasesCommand, "telegram-list-aliases-command", "/list-aliases", "Telegram slash command to list aliases")
+	rootCmd.PersistentFlags().StringVar(&TelegramSetAliasCommand, "telegram-set-alias-command", "/set_alias", "Telegram slash command to set alias")
+	rootCmd.PersistentFlags().StringVar(&TelegramClearAliasCommand, "telegram-clear-alias-command", "/clear_alias", "Telegram slash command to clear alias")
+	rootCmd.PersistentFlags().StringVar(&TelegramListAliasesCommand, "telegram-list-aliases-command", "/list_aliases", "Telegram slash command to list aliases")
 
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")

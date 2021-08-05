@@ -72,17 +72,17 @@ func (reporter *TelegramReporter) processSetAliasCommand(message *telegramBot.Me
 
 	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt; &lt;alias&gt;", reporter.TelegramSetAliasCommand)
 
-	args := strings.SplitN(message.Text, " ", 2)
+	args := strings.SplitN(message.Text, " ", 3)
 
-	if len(args) >= 2 {
-		labelsConfigManager.setWalletLabel(args[0], args[1])
+	if len(args) > 2 {
+		labelsConfigManager.setWalletLabel(args[1], args[2])
 		text = fmt.Sprintf(
 			"Successfully set alias for %s: %s",
 			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(args[0]), args[0]),
 			reporter.HtmlSerializer.CodeSerializer(args[1]),
 		)
 	} else {
-		log.Info().Msg("/set-alias: args length < 2")
+		log.Info().Msg("/set-alias: args length <= 2")
 	}
 
 	if err := reporter.sendMessage(message, text); err != nil {
@@ -91,18 +91,20 @@ func (reporter *TelegramReporter) processSetAliasCommand(message *telegramBot.Me
 }
 
 func (reporter *TelegramReporter) processClearAliasCommand(message *telegramBot.Message) {
-	reporter.logQuery(message, reporter.TelegramSetAliasCommand)
+	reporter.logQuery(message, reporter.TelegramClearAliasCommand)
 
 	text := fmt.Sprintf("Usage: `%s` &lt;wallet-address&gt;", reporter.TelegramClearAliasCommand)
 
-	if strings.TrimSpace(message.Text) != "" {
-		labelsConfigManager.clearWalletLabel(message.Text)
+	args := strings.SplitN(message.Text, " ", 2)
+
+	if len(args) >= 2 {
+		labelsConfigManager.clearWalletLabel(args[1])
 		text = fmt.Sprintf(
 			"Successfully cleared alias for %s",
 			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(message.Text), message.Text),
 		)
 	} else {
-		log.Info().Msg("/clear-alias: args length == ''")
+		log.Info().Msg("/clear-alias: args length < 2")
 	}
 
 	if err := reporter.sendMessage(message, text); err != nil {
@@ -111,7 +113,7 @@ func (reporter *TelegramReporter) processClearAliasCommand(message *telegramBot.
 }
 
 func (reporter *TelegramReporter) processListAliasesCommand(message *telegramBot.Message) {
-	reporter.logQuery(message, reporter.TelegramSetAliasCommand)
+	reporter.logQuery(message, reporter.TelegramListAliasesCommand)
 
 	var sb strings.Builder
 	sb.WriteString(reporter.HtmlSerializer.StrongSerializer("Wallet aliases:") + "\n")
