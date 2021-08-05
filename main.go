@@ -38,8 +38,11 @@ var (
 	Queries         []string
 	MintscanProject string
 
-	TelegramToken string
-	TelegramChat  int
+	TelegramToken              string
+	TelegramChat               int
+	TelegramSetAliasCommand    string
+	TelegramClearAliasCommand  string
+	TelegramListAliasesCommand string
 
 	SlackToken              string
 	SlackChat               string
@@ -134,8 +137,11 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	reporters = []Reporter{
 		&TelegramReporter{
-			TelegramToken: TelegramToken,
-			TelegramChat:  TelegramChat,
+			TelegramToken:              TelegramToken,
+			TelegramChat:               TelegramChat,
+			TelegramSetAliasCommand:    TelegramSetAliasCommand,
+			TelegramClearAliasCommand:  TelegramClearAliasCommand,
+			TelegramListAliasesCommand: TelegramListAliasesCommand,
 		},
 		&SlackReporter{
 			SlackToken:              SlackToken,
@@ -360,6 +366,9 @@ func main() {
 
 	rootCmd.PersistentFlags().StringVar(&TelegramToken, "telegram-token", "", "Telegram bot token")
 	rootCmd.PersistentFlags().IntVar(&TelegramChat, "telegram-chat", 0, "Telegram chat or user ID")
+	rootCmd.PersistentFlags().StringVar(&TelegramSetAliasCommand, "telegram-set-alias-command", "/set-alias", "Telegram slash command to set alias")
+	rootCmd.PersistentFlags().StringVar(&TelegramClearAliasCommand, "telegram-clear-alias-command", "/clear-alias", "Telegram slash command to clear alias")
+	rootCmd.PersistentFlags().StringVar(&TelegramListAliasesCommand, "telegram-list-aliases-command", "/list-aliases", "Telegram slash command to list aliases")
 
 	rootCmd.PersistentFlags().StringVar(&SlackToken, "slack-token", "", "Slack bot token")
 	rootCmd.PersistentFlags().StringVar(&SlackChat, "slack-chat", "", "Slack chat or user ID")
