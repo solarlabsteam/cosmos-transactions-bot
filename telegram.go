@@ -101,7 +101,7 @@ func (reporter *TelegramReporter) processClearAliasCommand(message *telegramBot.
 		labelsConfigManager.clearWalletLabel(args[1])
 		text = fmt.Sprintf(
 			"Successfully cleared alias for %s",
-			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(message.Text), message.Text),
+			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(args[1]), args[1]),
 		)
 	} else {
 		log.Info().Msg("/clear-alias: args length < 2")
