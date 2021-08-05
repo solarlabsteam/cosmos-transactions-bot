@@ -158,7 +158,7 @@ func (reporter *SlackReporter) processClearAliasCommand(s slack.SlashCommand, w 
 
 func (reporter *SlackReporter) processListAliasesCommand(s slack.SlashCommand, w http.ResponseWriter) {
 	var sb strings.Builder
-	sb.WriteString("Wallet aliases:\n")
+	sb.WriteString(reporter.MarkdownSerializer.StrongSerializer("Wallet aliases:\n"))
 
 	if len(labelsConfigManager.config.WalletLabels) == 0 {
 		sb.WriteString(fmt.Sprintf(
@@ -169,7 +169,7 @@ func (reporter *SlackReporter) processListAliasesCommand(s slack.SlashCommand, w
 
 	for key, value := range labelsConfigManager.config.WalletLabels {
 		sb.WriteString(fmt.Sprintf(
-			"- %s: %s\n",
+			"• %s: %s\n",
 			reporter.MarkdownSerializer.LinksSerializer(makeMintscanAccountLink(key), key),
 			reporter.MarkdownSerializer.CodeSerializer(value),
 		))
