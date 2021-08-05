@@ -160,6 +160,13 @@ func (reporter *SlackReporter) processListAliasesCommand(s slack.SlashCommand, w
 	var sb strings.Builder
 	sb.WriteString("Wallet aliases:\n")
 
+	if len(labelsConfigManager.config.WalletLabels) == 0 {
+		sb.WriteString(fmt.Sprintf(
+			"No label aliases are set. You can set one using `%s` &lt;wallet-address&gt;",
+			reporter.SlackSetAliasCommand,
+		))
+	}
+
 	for key, value := range labelsConfigManager.config.WalletLabels {
 		sb.WriteString(fmt.Sprintf(
 			"- %s: %s\n",
