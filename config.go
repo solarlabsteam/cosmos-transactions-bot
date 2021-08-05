@@ -52,6 +52,12 @@ func loadConfigFromYaml(path string) LabelsConfig {
 	}
 
 	log.Debug().Msg("Labels config is loaded successfully.")
+
+	if config.WalletLabels == nil {
+		log.Trace().Msg("WalletLabels in loaded labels config is empty, initializing.")
+		config.WalletLabels = make(map[string]string)
+	}
+
 	return config
 }
 
