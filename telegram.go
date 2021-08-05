@@ -78,8 +78,8 @@ func (reporter *TelegramReporter) processSetAliasCommand(message *telegramBot.Me
 		labelsConfigManager.setWalletLabel(args[1], args[2])
 		text = fmt.Sprintf(
 			"Successfully set alias for %s: %s",
-			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(args[1]), args[2]),
-			reporter.HtmlSerializer.CodeSerializer(args[1]),
+			reporter.HtmlSerializer.LinksSerializer(makeMintscanAccountLink(args[1]), args[1]),
+			reporter.HtmlSerializer.CodeSerializer(args[2]),
 		)
 	} else {
 		log.Info().Msg("/set-alias: args length <= 2")
