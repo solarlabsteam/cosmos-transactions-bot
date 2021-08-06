@@ -34,7 +34,7 @@ func (c *CacheManager) getValidatorMaybeFromCache(address string) (stakingtypes.
 
 	log.Trace().Str("address", address).Msg("No value in cache, querying for validator")
 
-	stakingClient := stakingtypes.NewQueryClient(grpcConn)
+	stakingClient := stakingtypes.NewQueryClient(c.grpcConn)
 	validatorResponse, err := stakingClient.Validator(
 		context.Background(),
 		&stakingtypes.QueryValidatorRequest{ValidatorAddr: address},

@@ -24,7 +24,7 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 	sb.WriteString(serializer.StrongSerializer("Withdraw rewards") + "\n")
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.getValidatorWithName(msg.ValidatorAddress),
 	))
 
 	sb.WriteString(fmt.Sprintf("%s %s",
