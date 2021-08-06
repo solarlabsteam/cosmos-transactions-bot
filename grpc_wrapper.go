@@ -91,7 +91,7 @@ func (w *GrpcWrapper) setDenom() {
 		return
 	}
 
-	bankClient := banktypes.NewQueryClient(grpcConn)
+	bankClient := banktypes.NewQueryClient(w.grpcConn)
 	denoms, err := bankClient.DenomsMetadata(
 		context.Background(),
 		&banktypes.QueryDenomsMetadataRequest{},
