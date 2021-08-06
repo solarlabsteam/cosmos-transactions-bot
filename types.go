@@ -70,7 +70,6 @@ func (s Serializer) getValidatorCommissionAtBlock(address string, block int64) s
 	if response, err := s.CacheManager.GrpcWrapper.getValidatorCommissionAtBlock(address, block); err != nil {
 		log.Warn().Err(err).Str("address", address).Msg("Could not load validator commission info")
 	} else {
-		sb.WriteString("\n")
 		for _, coin := range response {
 			if value, err := strconv.ParseFloat(coin.Amount.String(), 64); err != nil {
 				log.Error().
@@ -98,7 +97,6 @@ func (s Serializer) getDelegatorRewardsAtBlock(validator string, delegator strin
 			Str("delegator", delegator).
 			Msg("Could not load delegator rewards info")
 	} else {
-		sb.WriteString("\n")
 		for _, coin := range response {
 			if value, err := strconv.ParseFloat(coin.Amount.String(), 64); err != nil {
 				log.Error().
