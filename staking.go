@@ -46,7 +46,7 @@ func ParseMsgDelegate(message *cosmosTypes.Any) MsgDelegate {
 func (msg MsgDelegate) Serialize(serializer Serializer) string {
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Delegate") + "\n")
-	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.6f %s", msg.Amount, msg.Denom)) + "\n")
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
@@ -100,7 +100,7 @@ func ParseMsgBeginRedelegate(message *cosmosTypes.Any) MsgBeginRedelegate {
 func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Redelegate") + "\n")
-	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.6f %s", msg.Amount, msg.Denom)) + "\n")
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("By:"),
@@ -156,7 +156,7 @@ func ParseMsgUndelegate(message *cosmosTypes.Any) MsgUndelegate {
 func (msg MsgUndelegate) Serialize(serializer Serializer) string {
 	var sb strings.Builder
 	sb.WriteString(serializer.StrongSerializer("Undelegate") + "\n")
-	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.2f %s", msg.Amount, msg.Denom)) + "\n")
+	sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.6f %s", msg.Amount, msg.Denom)) + "\n")
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
