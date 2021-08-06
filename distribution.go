@@ -123,11 +123,15 @@ func ParseMsgWithdrawValidatorCommission(message *cosmosTypes.Any, block int64) 
 }
 
 func (msg MsgWithdrawValidatorCommission) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s %s
-%s %s`,
-		serializer.StrongSerializer("Withdraw validator commission"),
-		serializer.getValidatorCommissionAtBlock(msg.ValidatorAddress, msg.Block-1),
+	var sb strings.Builder
+
+	sb.WriteString(serializer.StrongSerializer("Withdraw validator commission") + "\n")
+	sb.WriteString(serializer.getValidatorCommissionAtBlock(msg.ValidatorAddress, msg.Block-1))
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("Validator:"),
 		serializer.getValidatorWithName(msg.ValidatorAddress),
-	)
+	))
+
+	return sb.String()
 }
