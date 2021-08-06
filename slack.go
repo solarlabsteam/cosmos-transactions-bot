@@ -56,6 +56,9 @@ func (r *SlackReporter) Init() {
 		CodeSerializer: func(text string) string {
 			return fmt.Sprintf("`%s`", text)
 		},
+		MultilineCodeSerializer: func(text string) string {
+			return fmt.Sprintf("```\n%s\n````", text)
+		},
 		CacheManager: r.CacheManager,
 	}
 

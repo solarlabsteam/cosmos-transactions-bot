@@ -31,7 +31,7 @@ func (tx Tx) Serialize(serializer Serializer) string {
 		sb.WriteString(fmt.Sprintf(
 			"\n%s %s",
 			serializer.StrongSerializer("Memo:"),
-			serializer.CodeSerializer(tx.Memo),
+			serializer.getMemo(tx.Memo),
 		))
 	}
 

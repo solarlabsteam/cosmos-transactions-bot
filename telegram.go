@@ -60,6 +60,9 @@ func (r *TelegramReporter) Init() {
 		CodeSerializer: func(text string) string {
 			return fmt.Sprintf(`<code>%s</code>`, text)
 		},
+		MultilineCodeSerializer: func(text string) string {
+			return fmt.Sprintf(`<pre>%s</pre>`, text)
+		},
 		CacheManager: r.CacheManager,
 	}
 

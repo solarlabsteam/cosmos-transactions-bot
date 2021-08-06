@@ -12,10 +12,11 @@ type Msg interface {
 }
 
 type Serializer struct {
-	LinksSerializer  func(string, string) string
-	StrongSerializer func(string) string
-	CodeSerializer   func(string) string
-	CacheManager     *CacheManager
+	LinksSerializer         func(string, string) string
+	StrongSerializer        func(string) string
+	CodeSerializer          func(string) string
+	MultilineCodeSerializer func(string) string
+	CacheManager            *CacheManager
 }
 
 type Report struct {
@@ -48,6 +49,14 @@ func (s Serializer) getWalletWithLabel(address string) string {
 	}
 
 	return sb.String()
+}
+
+func (s Serializer) getMemo(memo string) string {
+	if strings.Contains(memo, "\n") {
+		return "\n" + s.MultilineCodeSerializer(memo)
+	}
+
+	return s.CodeSerializer(memo)
 }
 
 func (s Serializer) getValidatorWithName(address string) string {
