@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -71,7 +72,17 @@ func (s Serializer) getValidatorCommissionAtBlock(address string, block int64) s
 	} else {
 		sb.WriteString("\n")
 		for _, coin := range response {
-			sb.WriteString(s.CodeSerializer(Printer.Sprintf("%.6f %s", coin.Amount, coin.Denom)) + "\n")
+			if value, err := strconv.ParseFloat(coin.Amount.String(), 64); err != nil {
+				log.Error().
+					Err(err).
+					Msg("Could not parse balance")
+			} else {
+				sb.WriteString(s.CodeSerializer(Printer.Sprintf(
+					"%.6f %s",
+					float64(value)/DenomCoefficient,
+					Denom,
+				)) + "\n")
+			}
 		}
 	}
 
@@ -89,7 +100,17 @@ func (s Serializer) getDelegatorRewardsAtBlock(validator string, delegator strin
 	} else {
 		sb.WriteString("\n")
 		for _, coin := range response {
-			sb.WriteString(s.CodeSerializer(Printer.Sprintf("%.6f %s", coin.Amount, coin.Denom)) + "\n")
+			if value, err := strconv.ParseFloat(coin.Amount.String(), 64); err != nil {
+				log.Error().
+					Err(err).
+					Msg("Could not parse balance")
+			} else {
+				sb.WriteString(s.CodeSerializer(Printer.Sprintf(
+					"%.6f %s",
+					float64(value)/DenomCoefficient,
+					Denom,
+				)) + "\n")
+			}
 		}
 	}
 
