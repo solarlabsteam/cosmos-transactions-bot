@@ -12,6 +12,7 @@ import (
 type MsgDelegate struct {
 	DelegatorAddress string
 	ValidatorAddress string
+	Validator        cosmosStakingTypes.Validator
 	Denom            string
 	Amount           float64
 }
@@ -54,7 +55,7 @@ func (msg MsgDelegate) Serialize(serializer Serializer) string {
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("To:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.getValidatorWithName(msg.ValidatorAddress),
 	))
 
 	return sb.String()
@@ -108,12 +109,12 @@ func (msg MsgBeginRedelegate) Serialize(serializer Serializer) string {
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorSrcAddress), msg.ValidatorSrcAddress),
+		serializer.getValidatorWithName(msg.ValidatorSrcAddress),
 	))
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("To:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorDstAddress), msg.ValidatorDstAddress),
+		serializer.getValidatorWithName(msg.ValidatorDstAddress),
 	))
 
 	return sb.String()
@@ -159,7 +160,7 @@ func (msg MsgUndelegate) Serialize(serializer Serializer) string {
 
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.getValidatorWithName(msg.ValidatorAddress),
 	))
 
 	sb.WriteString(fmt.Sprintf("%s %s",

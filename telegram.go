@@ -18,6 +18,7 @@ type TelegramReporter struct {
 
 	TelegramBot    *telegramBot.Bot
 	HtmlSerializer Serializer
+	CacheManager   *CacheManager
 }
 
 func (r TelegramReporter) Serialize(report Report) string {
@@ -59,6 +60,7 @@ func (r *TelegramReporter) Init() {
 		CodeSerializer: func(text string) string {
 			return fmt.Sprintf(`<code>%s</code>`, text)
 		},
+		CacheManager: r.CacheManager,
 	}
 
 	r.TelegramBot.Handle(r.TelegramSetAliasCommand, r.processSetAliasCommand)

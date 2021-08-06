@@ -14,6 +14,7 @@ type Serializer struct {
 	LinksSerializer  func(string, string) string
 	StrongSerializer func(string) string
 	CodeSerializer   func(string) string
+	CacheManager     *CacheManager
 }
 
 type Report struct {
@@ -43,6 +44,20 @@ func (s Serializer) getWalletWithLabel(address string) string {
 
 	if labelFound {
 		sb.WriteString(fmt.Sprintf(" (%s)", s.CodeSerializer(label)))
+	}
+
+	return sb.String()
+}
+
+func (s Serializer) getValidatorWithName(address string) string {
+	var sb strings.Builder
+
+	sb.WriteString(s.LinksSerializer(makeMintscanValidatorLink(address), address))
+
+	if validator, err := s.CacheManager.getValidatorMaybeFromCache(address); err != nil {
+		log.Warn().Err(err).Str("address", address).Msg("Could not load delegate validator info")
+	} else {
+		sb.WriteString(fmt.Sprintf(" (%s)", s.CodeSerializer(validator.Description.Moniker)))
 	}
 
 	return sb.String()

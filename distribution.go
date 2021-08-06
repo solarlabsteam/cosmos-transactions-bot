@@ -120,7 +120,7 @@ func (msg MsgWithdrawValidatorCommission) Serialize(serializer Serializer) strin
 	return fmt.Sprintf(`%s
 %s %s`,
 		serializer.StrongSerializer("Withdraw validator commission"),
-		serializer.StrongSerializer("Wallet:"),
-		serializer.LinksSerializer(makeMintscanValidatorLink(msg.ValidatorAddress), msg.ValidatorAddress),
+		serializer.StrongSerializer("Validator:"),
+		serializer.getValidatorWithName(msg.ValidatorAddress),
 	)
 }

@@ -62,13 +62,15 @@ var (
 
 	reporters []Reporter
 
-	client *tmclient.WSClient
+	client   *tmclient.WSClient
+	grpcConn *grpc.ClientConn
 
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
 	SentTransactions map[string]bool = make(map[string]bool)
 
 	labelsConfigManager *LabelsConfigManager
+	cacheManager        *CacheManager
 )
 
 var rootCmd = &cobra.Command{
@@ -135,6 +137,19 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	zerolog.SetGlobalLevel(logLevel)
 
+	grpcConn, err := grpc.Dial(
+		NodeAddress,
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	defer grpcConn.Close()
+
+	labelsConfigManager = initLabelsConfig(LabelsConfigPath)
+	cacheManager = NewCacheManager(grpcConn)
+
 	reporters = []Reporter{
 		&TelegramReporter{
 			TelegramToken:              TelegramToken,
@@ -142,6 +157,7 @@ func Execute(cmd *cobra.Command, args []string) {
 			TelegramSetAliasCommand:    TelegramSetAliasCommand,
 			TelegramClearAliasCommand:  TelegramClearAliasCommand,
 			TelegramListAliasesCommand: TelegramListAliasesCommand,
+			CacheManager:               cacheManager,
 		},
 		&SlackReporter{
 			SlackToken:              SlackToken,
@@ -151,6 +167,7 @@ func Execute(cmd *cobra.Command, args []string) {
 			SlackSetAliasCommand:    SlackSetAliasCommand,
 			SlackClearAliasCommand:  SlackClearAliasCommand,
 			SlackListAliasesCommand: SlackListAliasesCommand,
+			CacheManager:            cacheManager,
 		},
 	}
 
@@ -158,8 +175,6 @@ func Execute(cmd *cobra.Command, args []string) {
 		log.Info().Str("name", reporter.Name()).Msg("Init reporter")
 		reporter.Init()
 	}
-
-	labelsConfigManager = initLabelsConfig(LabelsConfigPath)
 
 	setDenom()
 
@@ -228,6 +243,8 @@ func processResponse(result jsonRpcTypes.RPCResponse) {
 			log.Error().Err(err).Str("name", reporter.Name()).Msg("Could not send message")
 		}
 	}
+
+	cacheManager.clearCache()
 }
 
 func generateReport(result jsonRpcTypes.RPCResponse) Report {
@@ -312,16 +329,6 @@ func setDenom() {
 			Msg("Using provided denom and coefficient.")
 		return
 	}
-
-	grpcConn, err := grpc.Dial(
-		NodeAddress,
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	defer grpcConn.Close()
 
 	bankClient := banktypes.NewQueryClient(grpcConn)
 	denoms, err := bankClient.DenomsMetadata(

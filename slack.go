@@ -23,6 +23,7 @@ type SlackReporter struct {
 
 	SlackClient        slack.Client
 	MarkdownSerializer Serializer
+	CacheManager       *CacheManager
 }
 
 func (r SlackReporter) Serialize(report Report) string {
@@ -55,6 +56,7 @@ func (r *SlackReporter) Init() {
 		CodeSerializer: func(text string) string {
 			return fmt.Sprintf("`%s`", text)
 		},
+		CacheManager: r.CacheManager,
 	}
 
 	go r.InitSlashHandler()
