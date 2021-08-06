@@ -36,7 +36,7 @@ func InitGrpcWrapper(nodeAddress string) *GrpcWrapper {
 }
 
 func (w *GrpcWrapper) CloseConnection() {
-	grpcConn.Close()
+	w.grpcConn.Close()
 }
 
 func (w *GrpcWrapper) getValidator(address string) (stakingtypes.Validator, error) {
