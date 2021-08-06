@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,8 +22,6 @@ import (
 	tmclient "github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonRpcTypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	events "github.com/tendermint/tendermint/types"
-
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -71,6 +68,7 @@ var (
 
 	labelsConfigManager *LabelsConfigManager
 	cacheManager        *CacheManager
+	grpcWrapper         *GrpcWrapper
 )
 
 var rootCmd = &cobra.Command{
@@ -137,18 +135,12 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	zerolog.SetGlobalLevel(logLevel)
 
-	grpcConn, err := grpc.Dial(
-		NodeAddress,
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	defer grpcConn.Close()
+	grpcWrapper = InitGrpcWrapper(NodeAddress)
+	grpcWrapper.setDenom()
+	defer grpcWrapper.CloseConnection()
 
 	labelsConfigManager = initLabelsConfig(LabelsConfigPath)
-	cacheManager = NewCacheManager(grpcConn)
+	cacheManager = NewCacheManager(grpcWrapper)
 
 	reporters = []Reporter{
 		&TelegramReporter{
@@ -175,8 +167,6 @@ func Execute(cmd *cobra.Command, args []string) {
 		log.Info().Str("name", reporter.Name()).Msg("Init reporter")
 		reporter.Init()
 	}
-
-	setDenom()
 
 	client, err = tmclient.NewWS(
 		TendermintRpcAddress,
@@ -317,50 +307,6 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 	SentTransactions[txHash] = true
 
 	return report
-}
-
-func setDenom() {
-	// if --denom and --denom-coefficient are both provided, use them
-	// instead of fetching them via gRPC. Can be useful for networks like osmosis.
-	if Denom != "" && DenomCoefficient != 0 {
-		log.Info().
-			Str("denom", Denom).
-			Float64("coefficient", DenomCoefficient).
-			Msg("Using provided denom and coefficient.")
-		return
-	}
-
-	bankClient := banktypes.NewQueryClient(grpcConn)
-	denoms, err := bankClient.DenomsMetadata(
-		context.Background(),
-		&banktypes.QueryDenomsMetadataRequest{},
-	)
-
-	if err != nil {
-		log.Fatal().Err(err).Msg("Error querying denom")
-	}
-
-	metadata := denoms.Metadatas[0] // always using the first one
-	if Denom == "" {                // using display currency
-		Denom = metadata.Display
-	}
-
-	for _, unit := range metadata.DenomUnits {
-		log.Debug().
-			Str("denom", unit.Denom).
-			Uint32("exponent", unit.Exponent).
-			Msg("Denom info")
-		if unit.Denom == Denom {
-			DenomCoefficient = math.Pow10(int(unit.Exponent))
-			log.Info().
-				Str("denom", Denom).
-				Float64("coefficient", DenomCoefficient).
-				Msg("Got denom info")
-			return
-		}
-	}
-
-	log.Fatal().Msg("Could not find the denom info")
 }
 
 func main() {
