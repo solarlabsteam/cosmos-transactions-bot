@@ -3,10 +3,15 @@ package main
 import (
 	"context"
 	"math"
+	"strconv"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
+	cosmostypes "github.com/cosmos/cosmos-sdk/types"
+	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -42,6 +47,37 @@ func (w *GrpcWrapper) getValidator(address string) (stakingtypes.Validator, erro
 	)
 
 	return validatorResponse.Validator, err
+}
+
+func (w *GrpcWrapper) getValidatorCommissionAtBlock(address string, block int64) (cosmostypes.DecCoins, error) {
+	distributionClient := distributiontypes.NewQueryClient(w.grpcConn)
+	response, err := distributionClient.ValidatorCommission(
+		metadata.AppendToOutgoingContext(context.Background(), grpctypes.GRPCBlockHeightHeader, strconv.FormatInt(block, 10)),
+		&distributiontypes.QueryValidatorCommissionRequest{ValidatorAddress: address},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Commission.Commission, nil
+}
+
+func (w *GrpcWrapper) getDelegatorRewardsAtBlock(validator string, delegator string, block int64) (cosmostypes.DecCoins, error) {
+	distributionClient := distributiontypes.NewQueryClient(w.grpcConn)
+	response, err := distributionClient.DelegationRewards(
+		metadata.AppendToOutgoingContext(context.Background(), grpctypes.GRPCBlockHeightHeader, strconv.FormatInt(block, 10)),
+		&distributiontypes.QueryDelegationRewardsRequest{
+			ValidatorAddress: validator,
+			DelegatorAddress: delegator,
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Rewards, nil
 }
 
 func (w *GrpcWrapper) setDenom() {

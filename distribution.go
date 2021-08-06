@@ -12,6 +12,7 @@ import (
 type MsgWithdrawDelegatorReward struct {
 	ValidatorAddress string
 	DelegatorAddress string
+	Block            int64
 }
 
 func (msg MsgWithdrawDelegatorReward) Empty() bool {
@@ -22,6 +23,8 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 	var sb strings.Builder
 
 	sb.WriteString(serializer.StrongSerializer("Withdraw rewards") + "\n")
+	sb.WriteString(serializer.getDelegatorRewardsAtBlock(msg.ValidatorAddress, msg.DelegatorAddress, msg.Block-1))
+
 	sb.WriteString(fmt.Sprintf("%s %s\n",
 		serializer.StrongSerializer("From:"),
 		serializer.getValidatorWithName(msg.ValidatorAddress),
@@ -35,7 +38,7 @@ func (msg MsgWithdrawDelegatorReward) Serialize(serializer Serializer) string {
 	return sb.String()
 }
 
-func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any) MsgWithdrawDelegatorReward {
+func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any, block int64) MsgWithdrawDelegatorReward {
 	var parsedMessage cosmosDistributionTypes.MsgWithdrawDelegatorReward
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgWithdrawDelegatorReward")
@@ -50,6 +53,7 @@ func ParseMsgWithdrawDelegatorReward(message *cosmosTypes.Any) MsgWithdrawDelega
 	return MsgWithdrawDelegatorReward{
 		ValidatorAddress: parsedMessage.ValidatorAddress,
 		DelegatorAddress: parsedMessage.DelegatorAddress,
+		Block:            block,
 	}
 }
 
@@ -94,13 +98,14 @@ func (msg MsgSetWithdrawAddress) Serialize(serializer Serializer) string {
 
 type MsgWithdrawValidatorCommission struct {
 	ValidatorAddress string
+	Block            int64
 }
 
 func (msg MsgWithdrawValidatorCommission) Empty() bool {
 	return msg.ValidatorAddress == ""
 }
 
-func ParseMsgWithdrawValidatorCommission(message *cosmosTypes.Any) MsgWithdrawValidatorCommission {
+func ParseMsgWithdrawValidatorCommission(message *cosmosTypes.Any, block int64) MsgWithdrawValidatorCommission {
 	var parsedMessage cosmosDistributionTypes.MsgWithdrawValidatorCommission
 	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
 		log.Error().Err(err).Msg("Could not parse MsgWithdrawValidatorCommission")
@@ -113,13 +118,15 @@ func ParseMsgWithdrawValidatorCommission(message *cosmosTypes.Any) MsgWithdrawVa
 
 	return MsgWithdrawValidatorCommission{
 		ValidatorAddress: parsedMessage.ValidatorAddress,
+		Block:            block,
 	}
 }
 
 func (msg MsgWithdrawValidatorCommission) Serialize(serializer Serializer) string {
-	return fmt.Sprintf(`%s
+	return fmt.Sprintf(`%s %s
 %s %s`,
 		serializer.StrongSerializer("Withdraw validator commission"),
+		serializer.getValidatorCommissionAtBlock(msg.ValidatorAddress, msg.Block-1),
 		serializer.StrongSerializer("Validator:"),
 		serializer.getValidatorWithName(msg.ValidatorAddress),
 	)

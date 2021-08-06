@@ -62,3 +62,36 @@ func (s Serializer) getValidatorWithName(address string) string {
 
 	return sb.String()
 }
+
+func (s Serializer) getValidatorCommissionAtBlock(address string, block int64) string {
+	var sb strings.Builder
+
+	if response, err := s.CacheManager.GrpcWrapper.getValidatorCommissionAtBlock(address, block); err != nil {
+		log.Warn().Err(err).Str("address", address).Msg("Could not load validator commission info")
+	} else {
+		sb.WriteString("\n")
+		for _, coin := range response {
+			sb.WriteString(s.CodeSerializer(Printer.Sprintf("%.6f %s", coin.Amount, coin.Denom)) + "\n")
+		}
+	}
+
+	return sb.String()
+}
+
+func (s Serializer) getDelegatorRewardsAtBlock(validator string, delegator string, block int64) string {
+	var sb strings.Builder
+
+	if response, err := s.CacheManager.GrpcWrapper.getDelegatorRewardsAtBlock(validator, delegator, block); err != nil {
+		log.Warn().Err(err).
+			Str("validator", validator).
+			Str("delegator", delegator).
+			Msg("Could not load delegator rewards info")
+	} else {
+		sb.WriteString("\n")
+		for _, coin := range response {
+			sb.WriteString(s.CodeSerializer(Printer.Sprintf("%.6f %s", coin.Amount, coin.Denom)) + "\n")
+		}
+	}
+
+	return sb.String()
+}

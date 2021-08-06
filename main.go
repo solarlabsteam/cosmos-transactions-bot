@@ -292,9 +292,9 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		case "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress":
 			msg = ParseMsgSetWithdrawAddress(message)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward":
-			msg = ParseMsgWithdrawDelegatorReward(message)
+			msg = ParseMsgWithdrawDelegatorReward(message, txResult.Height)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission":
-			msg = ParseMsgWithdrawValidatorCommission(message)
+			msg = ParseMsgWithdrawValidatorCommission(message, txResult.Height)
 		default:
 			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
