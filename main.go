@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	json "github.com/tendermint/tendermint/libs/json"
-	"google.golang.org/grpc"
 
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -59,8 +58,7 @@ var (
 
 	reporters []Reporter
 
-	client   *tmclient.WSClient
-	grpcConn *grpc.ClientConn
+	client *tmclient.WSClient
 
 	log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 
