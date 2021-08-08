@@ -23,3 +23,7 @@ func makeMintscanAccountLink(account string) string {
 func makeMintscanValidatorLink(validator string) string {
 	return makeMintscanLink(fmt.Sprintf("validators/%s", validator))
 }
+
+func makeMintscanProposalsLink() string {
+	return makeMintscanLink("validators")
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	cosmosTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cosmosGovTypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -51,4 +52,58 @@ func ParseMsgVote(message *cosmosTypes.Any) MsgVote {
 		Voter:      parsedMessage.Voter,
 		Option:     parsedMessage.Option.String(),
 	}
+}
+
+type MsgSubmitProposal struct {
+	Title       string
+	Description string
+	Proposer    string
+}
+
+func (msg MsgSubmitProposal) Empty() bool {
+	return msg.Title == ""
+}
+
+func ParseMsgSubmitProposal(message *cosmosTypes.Any, block int64) MsgSubmitProposal {
+	var parsedMessage cosmosGovTypes.MsgSubmitProposal
+	if err := proto.Unmarshal(message.Value, &parsedMessage); err != nil {
+		log.Error().Err(err).Msg("Could not parse MsgSubmitProposal")
+		return MsgSubmitProposal{}
+	}
+
+	log.Info().
+		Str("title", parsedMessage.GetContent().GetTitle()).
+		Str("description", parsedMessage.GetContent().GetDescription()).
+		Str("proposer", parsedMessage.Proposer).
+		Msg("MsgWithdrawValidatorCommission")
+
+	return MsgSubmitProposal{
+		Title:       parsedMessage.GetContent().GetTitle(),
+		Description: parsedMessage.GetContent().GetDescription(),
+		Proposer:    parsedMessage.Proposer,
+	}
+}
+
+func (msg MsgSubmitProposal) Serialize(serializer Serializer) string {
+	var sb strings.Builder
+
+	sb.WriteString(serializer.StrongSerializer("New proposal") + "\n")
+	sb.WriteString(serializer.LinksSerializer(makeMintscanProposalsLink(), "Mintscan") + "\n")
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
+		serializer.StrongSerializer("Proposer:"),
+		serializer.LinksSerializer(makeMintscanAccountLink(msg.Proposer), msg.Proposer),
+	))
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
+		serializer.StrongSerializer("Title:"),
+		serializer.getSingleOrMultilineCodeBlock(msg.Title),
+	))
+
+	sb.WriteString(fmt.Sprintf("%s %s\n",
+		serializer.StrongSerializer("Description:"),
+		serializer.getSingleOrMultilineCodeBlock(msg.Description),
+	))
+
+	return sb.String()
 }

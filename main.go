@@ -281,6 +281,8 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 			msg = ParseMsgSend(message)
 		case "/cosmos.gov.v1beta1.MsgVote":
 			msg = ParseMsgVote(message)
+		case "/cosmos.gov.v1beta1.MsgSubmitProposal":
+			msg = ParseMsgSubmitProposal(message, txResult.Height)
 		case "/cosmos.staking.v1beta1.MsgDelegate":
 			msg = ParseMsgDelegate(message)
 		case "/cosmos.staking.v1beta1.MsgUndelegate":

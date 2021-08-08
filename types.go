@@ -51,12 +51,12 @@ func (s Serializer) getWalletWithLabel(address string) string {
 	return sb.String()
 }
 
-func (s Serializer) getMemo(memo string) string {
-	if strings.Contains(memo, "\n") {
-		return "\n" + s.MultilineCodeSerializer(memo)
+func (s Serializer) getSingleOrMultilineCodeBlock(block string) string {
+	if strings.Contains(block, "\n") {
+		return "\n" + s.MultilineCodeSerializer(block)
 	}
 
-	return s.CodeSerializer(memo)
+	return s.CodeSerializer(block)
 }
 
 func (s Serializer) getValidatorWithName(address string) string {
