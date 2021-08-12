@@ -5,6 +5,13 @@
 
 cosmos-transactions-bot is a tool that sends a message to configured channels on new transactions with a specific filter.
 
+Here's how the notification may look like:
+
+![Slack](https://raw.githubusercontent.com/solarlabsteam/cosmos-transactions-bot/master/images/example-slack.png)
+
+![Telegram](https://raw.githubusercontent.com/solarlabsteam/cosmos-transactions-bot/master/images/example-telegram.png)
+
+
 ## How can I set it up?
 
 Download the latest release from [the releases page](https://github.com/solarlabsteam/cosmos-transactions-bot/releases/). After that, you should unzip it and you are ready to go:
@@ -91,10 +98,13 @@ For example, we're using this tool to monitor new delegations for our validator 
 
 ```
 # sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf is SOLAR Validator on Sentinel
-query = "delegate.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'"
+query = [
+    "delegate.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
+    "unbond.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'"
+]
 ```
 
-Unfortunately there is no OR operator support, so you cannot monitor different events. See [this](https://stackoverflow.com/questions/65709248/how-to-use-an-or-condition-with-the-tendermint-websocket-subscribe-method) and [this](https://github.com/tendermint/tendermint/issues/5206) for context. You can spawn a few instances of the app with different filters though.
+Unfortunately there is no OR operator support. See [this](https://stackoverflow.com/questions/65709248/how-to-use-an-or-condition-with-the-tendermint-websocket-subscribe-method) and [this](https://github.com/tendermint/tendermint/issues/5206) for context. You can add a few filters in the config though.
 
 See [the documentation](https://docs.tendermint.com/master/rpc/#/Websocket/subscribe) for more information.
 
@@ -103,9 +113,9 @@ See [the documentation](https://docs.tendermint.com/master/rpc/#/Websocket/subsc
 Currently this program supports the following notifications channels:
 1) Telegram
 
-Go to @BotFather in Telegram and create a bot. After that, there are two options:
-- you want to send messages to a user. This user should write a message to @getmyid_bot, then copy the `Your user ID` number. Also keep in mind that the bot won't be able to send messages unless you contact it first, so write a message to a bot before proceeding.
-- you want to send messages to a channel. Write something to a channel, then forward it to @getmyid_bot and copy the `Forwarded from chat` number. Then add the bot as an admin.
+Go to [@BotFather](https://t.me/BotFather) in Telegram and create a bot. After that, there are two options:
+- you want to send messages to a user. This user should write a message to [@getmyid_bot](https://t.me/getmyid_bot), then copy the `Your user ID` number. Also keep in mind that the bot won't be able to send messages unless you contact it first, so write a message to a bot before proceeding.
+- you want to send messages to a channel. Write something to a channel, then forward it to [@getmyid_bot](https://t.me/getmyid_bot) and copy the `Forwarded from chat` number. Then add the bot as an admin.
 
 
 Then run a program with `--telegram-token <token> --telegram-chat <chat ID>`.
@@ -116,6 +126,27 @@ Go to the Slack web interface -> Manage apps and create a new app.
 Give the app the `chat:write` scope and add the integration to a channel by typing `/invite <bot username>` there.
 After that, run the program with `--slack-token <token> --slack-chat <channel name>`.
 
+## Labels
+
+You can add a label to specific wallets, so when a tx is done where the wallet is participating at, there'll be a label in the notification sent by this app. Check the Slack image at the beginning of this README to see how it looks like.
+
+To set it up, you'll need a few things:
+
+1. In the app config, set `labels-config` - a path to the `.toml` file where all the labels are stored and persistent.
+2. Then you'll need to configure an app to handle commands.
+
+### Configuring Slack app for handling labels
+
+1. Create a Slack app, write down a signing secret for it somewhere
+2. Set up `slack-signing-secret` in config with this value. Maybe set `slack-listen-address` to override the address Slack slash commands handler is listening to.
+3. Make sure that the Slack slash handler is accessible from the outside (you can open `http://<your-server-IP-or-address>:<slack-handler-listening-port>/slash` and if it returns an error and not a connection reset/timeout, it's good)
+4. Create a slash command, the one used for listing aliases (`/list-aliases` by default, you can override it in settings). Specify the address above as commands handler.
+5. Do the same for adding alias handler command(`/set-alias` by default) and clearing alias command (`/clear-alias` by default).
+6. It's done, try using these commands in your Slack workspace.
+
+### Configuring Telegram app for handling labels
+
+No extra configuration is needed, just write to the bot you are using and use either the default commands (`/set-alias`, `/clear-alias`, `/list-aliases`) or the ones you've overridden in the config.
 
 ## Which networks this is guaranteed to work?
 
