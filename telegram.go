@@ -180,6 +180,7 @@ func (r TelegramReporter) SendReport(report Report) error {
 		},
 		serializedReport,
 		telegramBot.ModeHTML,
+		telegramBot.NoPreview,
 	)
 	return err
 }
