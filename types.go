@@ -79,7 +79,7 @@ func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) 
 	if err != nil || rate == 0 {
 		return s.CodeSerializer(Printer.Sprintf(
 			"%.6f %s",
-			float64(amount)/DenomCoefficient,
+			amount,
 			denom,
 		))
 	}
@@ -88,7 +88,7 @@ func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) 
 
 	return s.CodeSerializer(Printer.Sprintf(
 		"%.6f %s ($%.3f)",
-		float64(amount)/DenomCoefficient,
+		amount,
 		denom,
 		usdPrice,
 	))
@@ -133,7 +133,7 @@ func (s Serializer) getDelegatorRewardsAtBlock(validator string, delegator strin
 					Err(err).
 					Msg("Could not parse balance")
 			} else {
-				sb.WriteString(s.getTokensMaybeWithDollarPrice(value, Denom) + "\n")
+				sb.WriteString(s.getTokensMaybeWithDollarPrice(value/DenomCoefficient, Denom) + "\n")
 			}
 		}
 	}
