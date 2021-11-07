@@ -42,7 +42,7 @@ func (c *CacheManager) getValidatorMaybeFromCache(address string) (stakingtypes.
 	return validator, nil
 }
 
-func (c *CacheManager) getRate() (float32, error) {
+func (c *CacheManager) getRate() (float64, error) {
 	return c.CoingeckoWrapper.GetRate()
 }
 

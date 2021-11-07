@@ -9,7 +9,7 @@ import (
 type CoingeckoWrapper struct {
 	client     *gecko.Client
 	currency   string
-	result     float32
+	result     float64
 	lastUpdate time.Time
 }
 
@@ -27,7 +27,7 @@ func NewCoingeckoWrapper(currency string) *CoingeckoWrapper {
 	}
 }
 
-func (c *CoingeckoWrapper) GetRate() (float32, error) {
+func (c *CoingeckoWrapper) GetRate() (float64, error) {
 	if c.client == nil {
 		log.Trace().Msg("Coingecko wrapper not initialized, cannot fetch data.")
 		return 0, nil
@@ -48,8 +48,8 @@ func (c *CoingeckoWrapper) GetRate() (float32, error) {
 		return 0, err
 	}
 
-	c.result = result.MarketPrice
+	c.result = float64(result.MarketPrice)
 	c.lastUpdate = time.Now()
 
-	return result.MarketPrice, nil
+	return c.result, nil
 }

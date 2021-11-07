@@ -84,13 +84,11 @@ func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) 
 		))
 	}
 
-	usdPrice := float64(rate) * float64(amount) / DenomCoefficient
-
 	return s.CodeSerializer(Printer.Sprintf(
 		"%.6f %s ($%.3f)",
 		amount,
 		denom,
-		usdPrice,
+		rate*amount,
 	))
 }
 
