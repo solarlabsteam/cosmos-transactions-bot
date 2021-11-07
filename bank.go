@@ -63,7 +63,7 @@ func (msg MsgSend) Serialize(serializer Serializer) string {
 	sb.WriteString(fmt.Sprintf("%s\n", serializer.StrongSerializer("Transfer")))
 
 	for _, coin := range msg.Coins {
-		sb.WriteString(serializer.CodeSerializer(Printer.Sprintf("%.6f %s", coin.Amount, coin.Denom)) + "\n")
+		sb.WriteString(serializer.getTokensMaybeWithDollarPrice(coin.Amount, coin.Denom) + "\n")
 	}
 
 	sb.WriteString(fmt.Sprintf(`%s %s`,

@@ -30,9 +30,10 @@ var (
 	ConfigPath       string
 	LabelsConfigPath string
 
-	LogLevel        string
-	Queries         []string
-	MintscanProject string
+	LogLevel          string
+	Queries           []string
+	MintscanProject   string
+	CoingeckoCurrency string
 
 	TelegramToken              string
 	TelegramChat               int
@@ -67,6 +68,7 @@ var (
 	labelsConfigManager *LabelsConfigManager
 	cacheManager        *CacheManager
 	grpcWrapper         *GrpcWrapper
+	coingeckoWrapper    *CoingeckoWrapper
 )
 
 var rootCmd = &cobra.Command{
@@ -138,7 +140,8 @@ func Execute(cmd *cobra.Command, args []string) {
 	defer grpcWrapper.CloseConnection()
 
 	labelsConfigManager = initLabelsConfig(LabelsConfigPath)
-	cacheManager = NewCacheManager(grpcWrapper)
+	coingeckoWrapper = NewCoingeckoWrapper(CoingeckoCurrency)
+	cacheManager = NewCacheManager(grpcWrapper, coingeckoWrapper)
 
 	reporters = []Reporter{
 		&TelegramReporter{
@@ -331,7 +334,8 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&SlackClearAliasCommand, "slack-clear-alias-command", "/clear-alias", "Slack slash command to clear alias")
 	rootCmd.PersistentFlags().StringVar(&SlackListAliasesCommand, "slack-list-aliases-command", "/list-aliases", "Slack slash command to list aliases")
 
-	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "crypto-org", "mintscan.io/* project to generate links to")
+	rootCmd.PersistentFlags().StringVar(&MintscanProject, "mintscan-project", "cosmos", "mintscan.io/* project to generate links to")
+	rootCmd.PersistentFlags().StringVar(&CoingeckoCurrency, "coingecko-currency", "", "Coingecko currency name")
 	rootCmd.PersistentFlags().StringVar(&NodeAddress, "node", "localhost:9090", "RPC node address")
 	rootCmd.PersistentFlags().StringVar(&TendermintRpcAddress, "tendermint-rpc", "tcp://localhost:26657", "Tendermint RPC node address")
 

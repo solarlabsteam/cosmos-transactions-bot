@@ -9,16 +9,18 @@ type Cache struct {
 }
 
 type CacheManager struct {
-	Cache       Cache
-	GrpcWrapper GrpcWrapper
+	Cache            Cache
+	GrpcWrapper      GrpcWrapper
+	CoingeckoWrapper CoingeckoWrapper
 }
 
-func NewCacheManager(grpcWrapper *GrpcWrapper) *CacheManager {
+func NewCacheManager(grpcWrapper *GrpcWrapper, coingeckoWrapper *CoingeckoWrapper) *CacheManager {
 	return &CacheManager{
 		Cache: Cache{
 			Validators: make(map[string]stakingtypes.Validator),
 		},
-		GrpcWrapper: *grpcWrapper,
+		GrpcWrapper:      *grpcWrapper,
+		CoingeckoWrapper: *coingeckoWrapper,
 	}
 }
 
@@ -38,6 +40,10 @@ func (c *CacheManager) getValidatorMaybeFromCache(address string) (stakingtypes.
 
 	c.Cache.Validators[address] = validator
 	return validator, nil
+}
+
+func (c *CacheManager) getRate() (float32, error) {
+	return c.CoingeckoWrapper.GetRate()
 }
 
 func (c *CacheManager) clearCache() {

@@ -73,6 +73,27 @@ func (s Serializer) getValidatorWithName(address string) string {
 	return sb.String()
 }
 
+func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) string {
+	rate, err := s.CacheManager.getRate()
+
+	if err != nil || rate == 0 {
+		return s.CodeSerializer(Printer.Sprintf(
+			"%.6f %s",
+			float64(amount)/DenomCoefficient,
+			denom,
+		))
+	}
+
+	usdPrice := float64(rate) * float64(amount) / DenomCoefficient
+
+	return s.CodeSerializer(Printer.Sprintf(
+		"%.6f %s ($%.3f)",
+		float64(amount)/DenomCoefficient,
+		denom,
+		usdPrice,
+	))
+}
+
 func (s Serializer) getValidatorCommissionAtBlock(address string, block int64) string {
 	var sb strings.Builder
 
@@ -112,11 +133,7 @@ func (s Serializer) getDelegatorRewardsAtBlock(validator string, delegator strin
 					Err(err).
 					Msg("Could not parse balance")
 			} else {
-				sb.WriteString(s.CodeSerializer(Printer.Sprintf(
-					"%.6f %s",
-					float64(value)/DenomCoefficient,
-					Denom,
-				)) + "\n")
+				sb.WriteString(s.getTokensMaybeWithDollarPrice(value, Denom) + "\n")
 			}
 		}
 	}
