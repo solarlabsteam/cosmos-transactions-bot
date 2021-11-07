@@ -42,7 +42,7 @@ func (c *CoingeckoWrapper) GetRate() (float32, error) {
 		return c.result, nil
 	}
 
-	result, err := c.client.SimpleSinglePrice(c.currency, "USDT")
+	result, err := c.client.SimpleSinglePrice(c.currency, "usd")
 	if err != nil {
 		log.Warn().Err(err).Msg("Could not get Coingecko exchange rate")
 		return 0, err
