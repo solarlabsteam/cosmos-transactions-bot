@@ -33,7 +33,7 @@ func (c *CoingeckoWrapper) GetRate() (float64, error) {
 		return 0, nil
 	}
 
-	if !c.lastUpdate.IsZero() && time.Since(c.lastUpdate).Minutes() > 10 {
+	if !c.lastUpdate.IsZero() && time.Since(c.lastUpdate).Minutes() < 10 {
 		log.Trace().
 			Time("now", time.Now()).
 			Time("then", c.lastUpdate).
@@ -41,6 +41,10 @@ func (c *CoingeckoWrapper) GetRate() (float64, error) {
 			Msg("Using rate from cache.")
 		return c.result, nil
 	}
+
+	log.Debug().
+		Str("currency", c.currency).
+		Msg("Fetching exchange rate from Coingecko")
 
 	result, err := c.client.SimpleSinglePrice(c.currency, "usd")
 	if err != nil {
