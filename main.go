@@ -52,6 +52,7 @@ var (
 	NodeAddress          string
 	TendermintRpcAddress string
 
+	BaseDenom        string
 	Denom            string
 	DenomCoefficient float64
 
@@ -298,6 +299,10 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 			msg = ParseMsgWithdrawDelegatorReward(message, txResult.Height)
 		case "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission":
 			msg = ParseMsgWithdrawValidatorCommission(message, txResult.Height)
+		case "/ibc.applications.transfer.v1.MsgTransfer":
+			msg = ParseMsgIbcTransfer(message)
+		case "/ibc.core.channel.v1.MsgRecvPacket":
+			msg = ParseMsgIbcRecvPacket(message)
 		default:
 			log.Warn().Str("type", message.TypeUrl).Msg("Got a message which is not supported")
 		}
@@ -315,8 +320,9 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 func main() {
 	rootCmd.PersistentFlags().StringVar(&ConfigPath, "config", "", "Config file path")
 	rootCmd.PersistentFlags().StringVar(&LabelsConfigPath, "labels-config", "", "Labels config file path")
-	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin denom")
-	rootCmd.PersistentFlags().Float64Var(&DenomCoefficient, "denom-coefficient", 0, "Denom coefficient")
+	rootCmd.PersistentFlags().StringVar(&BaseDenom, "base-denom", "", "Cosmos coin base denom (like uatom)")
+	rootCmd.PersistentFlags().StringVar(&Denom, "denom", "", "Cosmos coin display denom (like atom)")
+	rootCmd.PersistentFlags().Float64Var(&DenomCoefficient, "denom-coefficient", 1_000_000, "Denom coefficient from base denom to display denom")
 	rootCmd.PersistentFlags().StringVar(&LogLevel, "log-level", "info", "Logging level")
 	rootCmd.PersistentFlags().StringSliceVar(&Queries, "query", []string{"tx.height > 1"}, "Tx filter to subscribe to")
 

@@ -77,11 +77,7 @@ func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) 
 	rate, err := s.CacheManager.getRate()
 
 	if err != nil || rate == 0 {
-		return s.CodeSerializer(Printer.Sprintf(
-			"%.6f %s",
-			amount,
-			denom,
-		))
+		return s.getTokensFormatted(amount, denom)
 	}
 
 	return s.CodeSerializer(Printer.Sprintf(
@@ -89,6 +85,14 @@ func (s Serializer) getTokensMaybeWithDollarPrice(amount float64, denom string) 
 		amount,
 		denom,
 		rate*amount,
+	))
+}
+
+func (s Serializer) getTokensFormatted(amount float64, denom string) string {
+	return s.CodeSerializer(Printer.Sprintf(
+		"%.6f %s",
+		amount,
+		denom,
 	))
 }
 
