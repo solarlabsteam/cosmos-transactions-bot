@@ -166,8 +166,11 @@ func Execute(cmd *cobra.Command, args []string) {
 	}
 
 	for _, reporter := range reporters {
-		log.Info().Str("name", reporter.Name()).Msg("Init reporter")
 		reporter.Init()
+
+		if reporter.Enabled() {
+			log.Info().Str("name", reporter.Name()).Msg("Init reporter")
+		}
 	}
 
 	client, err = tmclient.NewWS(
@@ -244,9 +247,15 @@ func generateReport(result jsonRpcTypes.RPCResponse) Report {
 		Msgs: []Msg{},
 	}
 
+	if result.Error != nil && result.Error.Message != "" {
+		log.Error().Str("msg", result.Error.Error()).Msg("Got error in RPC response")
+		return Report{}
+	}
+
 	var resultEvent ctypes.ResultEvent
 	if err := json.Unmarshal(result.Result, &resultEvent); err != nil {
 		log.Error().Err(err).Msg("Failed to parse event")
+		return Report{}
 	}
 
 	if resultEvent.Data == nil {
