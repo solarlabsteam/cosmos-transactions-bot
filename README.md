@@ -78,13 +78,13 @@ It subscribes to Tendermint JSON-RPC endpoint through Websockets (see [this](htt
 
 You can pass the artuments to the executable file to configure it. Here is the parameters list:
 
-- `--node` - the gRPC node URL. Defaults to `localhost:9090`
-- `--log-devel` - logger level. Defaults to `info`. You can set it to `debug` to make it more verbose.
+- `--node` - the gRPC node URL. Defaults to `localhost:9090`.
+- `--log-devel` - logger level. Defaults to `info`. You can set it to `debug` or even `trace` to make it more verbose.
 - `--telegram-token` - Telegram bot token
 - `--telegram-chat` - Telegram user or chat ID
 - `--slack-token` - Slack bot token
 - `--slack-chat` - Slack user or chat ID
-- `--mintscan-prefix` - This bot generates links to Mintscan for validators, using this prefix. Links have the following format: `https://mintscan.io/<mintscan-prefix>/validator/<validator ID>`. Defaults to `persistence`.
+- `--mintscan-prefix` - This bot generates links to Mintscan for validators, using this prefix. Links have the following format: `https://mintscan.io/<mintscan-prefix>/validator/<validator ID>`.
 - `--query` - See below.
 
 
@@ -98,15 +98,37 @@ For example, we're using this tool to monitor new delegations for our validator 
 
 ```
 # sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf is SOLAR Validator on Sentinel
+# sent1sazxkmhym0zcg9tmzvc4qxesqegs3q4u9l5v5q is SOLAR Validator's self delegated wallet on Sentinel
 query = [
+    # claiming rewards from validator's wallet
+    "withdraw_rewards.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
+    # incoming delegations from validator
     "delegate.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
-    "unbond.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'"
+    # redelegations from and to validator
+    "redelegate.source_validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
+    "redelegate.destination_validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
+    # unbonding from validator
+    "unbond.validator = 'sentvaloper1sazxkmhym0zcg9tmzvc4qxesqegs3q4u66tpmf'",
+    # tokens sent from validator's wallet
+    "transfer.sender = 'sent1sazxkmhym0zcg9tmzvc4qxesqegs3q4u9l5v5q'",
+    # tokens sent to validator's wallet
+    "transfer.recipient = 'sent1sazxkmhym0zcg9tmzvc4qxesqegs3q4u9l5v5q'",
+    # IBC token transferred from validator's wallet
+    "ibc_transfer.sender = 'sent1sazxkmhym0zcg9tmzvc4qxesqegs3q4u9l5v5q'",
+    # IBC token received at validator's wallet
+    "fungible_token_packet.receiver = 'sent1sazxkmhym0zcg9tmzvc4qxesqegs3q4u9l5v5q'",
 ]
 ```
 
 Unfortunately there is no OR operator support. See [this](https://stackoverflow.com/questions/65709248/how-to-use-an-or-condition-with-the-tendermint-websocket-subscribe-method) and [this](https://github.com/tendermint/tendermint/issues/5206) for context. You can add a few filters in the config though.
 
 See [the documentation](https://docs.tendermint.com/master/rpc/#/Websocket/subscribe) for more information.
+
+One important thing to keep in mind: by default, Tendermint RPC now only allows 5 connections per client, so if you have more than 5 filters specified, this will fail when subscribing to 6th one. To fix this, change this parameter to something that suits your needs in `<fullnode folder>/config/config.toml`:
+
+```
+max_subscriptions_per_client = 5
+```
 
 ## Notifications channels
 
